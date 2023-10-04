@@ -26,7 +26,7 @@ fn main() {
     // Parsing configuration file
     let config_builder = Config::builder()
         .add_source(File::new(
-            "/home/romzor/Developpement/karnaboo/config",
+            "../../config",
             FileFormat::Ini,
         ))
         .build()
