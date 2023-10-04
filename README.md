@@ -4,7 +4,7 @@ Streamline your update flows in open source environments !
 
 ## Context and description
 
-As I wanted to learn Rust and everything around it, I set myself an overly ambitious goal to see where it takes me. Because I am more of a sysadmin than a developper person, I decided to help administrators easily ("easy" is a very subjective notion) regulate and streamline the update flows of their Gnu/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their distribution version and their position in the topology.
+As I wanted to learn Rust and everything around it, I set myself an overly ambitious goal to see where it takes me (as a non-professional developper). I decided to help administrators (easily ?)regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their distribution version and their position in the topology.
 
 I am well aware that such a system has existed for a long time for "non-free environments". Also, it probably already exists for open source infrastructures as well and I am just not aware of it, but, since my goal here is to learn Rust (and its environment), I voluntarily didn't search for it and just started writing it myself.
 
