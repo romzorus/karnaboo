@@ -1,6 +1,6 @@
 # Karnaboo
 
-
+Streamline your update flows in open source environments !
 
 ## Context and description
 
