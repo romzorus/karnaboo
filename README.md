@@ -4,7 +4,7 @@ Streamline your update flows in open source environments !
 
 ## Context and description
 
-As I wanted to learn Rust and everything around it, I set myself an overly ambitious goal to see where it takes me (as a non-professional developper). I decided to help administrators (easily ?) regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their distribution version and their position in the topology.
+As I wanted to learn Rust and programming, I set myself an overly ambitious goal to see where it takes me. I decided to build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their distribution version and their position in the topology.
 
 I am well aware that such a system has existed for a long time for "non-free environments". Also, it probably already exists for open source infrastructures as well and I am just not aware of it, but, since my goal here is to learn Rust (and its environment), I voluntarily didn't search for it and just started writing it myself.
 
@@ -24,15 +24,25 @@ TBD
 ## Installation
 TBD
 
-## Support
-TBD
+## TO-DO list
+(not in order of priority)
 
-## Roadmap
-TBD
-- [ ] tasks
+*** Server side ***
+- [ ] add autocompletion
+- [ ] function to create own database from scratch in a working ArangoDB instance
+- [ ] function to check database consistency and coherence
+- [ ] fill "os" nodes with the actual repositories -> hardcoded list ? files available online through gitlab ?
+- [ ] handling configuration file : present at the root directory of the program or path specified as a command line argument
+- [ ] improve error handling and stability by getting rid of all "unwrap" and "expect" methods
+
+*** Agent side ***
+- [ ] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent 10.23.1.2 client")
+- [ ] get local system informations to send real requests
+- [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
+
 
 ## Contributing
-TBD
+All contributions and ideas are more than welcome.
 
 ## Authors and acknowledgment
 TBD
