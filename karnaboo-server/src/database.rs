@@ -127,6 +127,20 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
                 vec![json!([""])]
             }
         };
+/*
+        Things to check in the database :
+            - the collections must exist (nodes and edges) and with the proper names
+            - each client must be connected to one (and only one) DISS and one (and only one) an OS
+            - each DISS must be connected to one (and only one) REPS and a least one OS
+            - each REPS must be connected to a least one OS
+            - for each OS connected to a client, it has to be connected to at least one DISS and one REPS
+            - a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
+            - a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
+            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates
+*/
+
+/* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
+
     Ok(())
 }
 
@@ -296,7 +310,20 @@ pub async fn answer_requests(
 }
 
 pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
-    // Do something
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
     
     Ok(())
 }
