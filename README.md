@@ -46,7 +46,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 
 ### What is functioning so far
 
-- direct interaction with the database : on the server, you can directly enter AQL queries and see the database response, giving you full control of the database
+- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you full control of the database
 - agent is able to send a request through the network
 - server can receive and buffer multiple requests and let the administrator (user) decide to agree or drop each one
 
