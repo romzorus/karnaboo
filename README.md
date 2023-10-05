@@ -2,23 +2,26 @@
 
 Streamline your update flows in open source environments !
 
-## Context and description
+## Context and objective
 
-As I wanted to learn Rust and programming in general, I set myself an overly ambitious goal to see where it takes me : build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their OS version and their position in the topology. All these update flows are managed in a centralized way. Such a system has been around for a long time in "non-free environments" and it probably already exists for open source infrastructures as well, but, since my goal here is to learn by doing, I voluntarily didn't search for it and just started coding (not reinventing "apt-mirror" here. On the contrary, we use it and try to build upon it).
+As I wanted to learn Rust and programming in general, I set myself an overly ambitious goal to see where it takes me : build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their OS version and their position in the topology. **The goal here is to have all these update flows and configurations managed in a centralized way.** Such a system has been around for a long time in "non-free environments" and it probably already exists for open source infrastructures as well, but, since my goal here is to learn by doing, I voluntarily didn't search for it and just started coding (not reinventing "apt-mirror" here. On the contrary, we use it and try to build upon it).
 
 I am releasing this tool as an open source project for the following reasons :
 - it might help someone somewhere someday
 - maybe a sysadmin passing by could get ideas to improve this tool
 - hopefully a few contributors may be interested in helping and making this tool evolve into something bigger, more professional and more secure
 
-## Usage
+## Principles
 
-1. Fill the database with every host
-2. Organize virtually your update flows by linking nodes in the database
-3. Enforce your virtual structure through the server/agents
+### Different roles
+- REPS : REPatriation Server -> located in your DMZ and actually getting the updates from the official repositories
+- DISS : DIStribution Server -> located in your LAN, close to your clients, getting the updates from the REPS and making it available for the clients
+- Client : local host requiring its updates
 
-## Visuals
-TBD
+### Where Karnaboo comes in
+The REPS, DISS and clients all have the Karnaboo agent installed.
+On another machine, you have a Karnaboo server running where it can be reached by all the Karnaboo agents (and have access to a database).
+The Karnaboo server will then tell each machine what to do (where to look for updates...etc) according to the topology you decided in the database.
 
 ## Installation
 ### Prerequisites
@@ -29,12 +32,17 @@ TBD
 *** Karnaboo server ***
 1. clone the "karnaboo-server" repository
 2. write your configuration file
-3. Server building : go to "karnaboo-server" and "cargo build"
+3. go to "karnaboo-server" and run "cargo build"
 
 *** Karnaboo agent ***
 1. clone the "karnaboo-agent" repository
-3. Server building : go to "karnaboo-agent" and "cargo build"
+3. go to "karnaboo-agent" and run "cargo build"
 
+## Usage
+
+1. Fill the database with every host ("push" mode : the server listens while the agents send requests to be taken into account and to receive instructions according to the role they want to have)
+2. Organize virtually your update flows by linking nodes in the database
+3. Enforce your virtual structure through the server/agents
 
 ## TO-DO list
 (not in order of priority)
@@ -52,6 +60,8 @@ TBD
 - [ ] get local system informations to send real requests
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
 
+*** Others ***
+- [ ] Visuals for the "Principles" and "Usage" sections
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
