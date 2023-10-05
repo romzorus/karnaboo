@@ -295,6 +295,12 @@ pub async fn answer_requests(
     }
 }
 
+pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
+    // Do something
+    
+    Ok(())
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeClient {
     pub hostname: String,

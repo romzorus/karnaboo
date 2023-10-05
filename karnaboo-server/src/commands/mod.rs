@@ -16,6 +16,10 @@ pub fn help() {
     println!("Command °° Description °° Alternative or Exemple");
     println!("--------||-------------||------------------------");
     println!(
+        "{}    °° Show this help message °° h | ?",
+        "help".bold().white()
+    );
+    println!(
         "{}    °° Terminates silvadmin process °° ex | quit | q",
         "exit".bold().white()
     );
@@ -24,12 +28,12 @@ pub fn help() {
         "status".bold().white()
     );
     println!(
-        "{}    °° Show this help message °° h | ?",
-        "help".bold().white()
+        "{}    °° Directly interact with the database through AQL queries °° dbm",
+        "dbmode".bold().white()
     );
     println!(
-        "{}    °° Go to database interaction mode °° for db",
-        "db".bold().white()
+        "{}    °° Check consistency and coherence of your database °° dbc",
+        "dbcheck".bold().white()
     );
     println!(
         "{}    °° Answer hosts requests to be handled °° ansreq | ar",
