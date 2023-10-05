@@ -4,16 +4,15 @@ Streamline your update flows in open source environments !
 
 ## Context and description
 
-As I wanted to learn Rust and programming, I set myself an overly ambitious goal to see where it takes me. I decided to build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their distribution version and their position in the topology.
-
-I am well aware that such a system has existed for a long time for "non-free environments". Also, it probably already exists for open source infrastructures as well and I am just not aware of it, but, since my goal here is to learn Rust (and its environment), I voluntarily didn't search for it and just started writing it myself.
+As I wanted to learn Rust and programming in general, I set myself an overly ambitious goal to see where it takes me : build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their OS version and their position in the topology. All theses update flows are managed in a centralized way. Such a system has been around for a long time in "non-free environments" and it probably already exists for open source infrastructures as well, but, since my goal here is to learn by doing, I voluntarily didn't search for it and just started coding (not reinventing "apt-mirror" here. On the contrary, we use it and try to build upon it).
 
 I am releasing this tool as an open source project for the following reasons :
 - it might help someone somewhere someday
-- maybe some sysadmin has ideas for improving this tool and would be willing to talk about it
-- hopefully some contributors may be interested in helping to develop this tool and make it evolve into something bigger, more secure and actually useful for organizations
+- maybe some sysadmin has ideas for improving this tool
+- hopefully some contributors may be interested in helping and making this tool evolve into something bigger, more professional and more secure
 
 ## Usage
+
 1. Fill the database with every host
 2. Organize virtually your update flows by linking nodes in the database
 3. Enforce your virtual structure through the server/agents
@@ -22,7 +21,20 @@ I am releasing this tool as an open source project for the following reasons :
 TBD
 
 ## Installation
-TBD
+### Prerequisites
+- a functionning local Rust installation
+- a functionning and reachable ArangoDB instance
+
+### Building
+*** Karnaboo server ***
+1. clone the "karnaboo-server" repository
+2. write your configuration file
+3. Server building : go to "karnaboo-server" and "cargo build"
+
+*** Karnaboo agent ***
+1. clone the "karnaboo-agent" repository
+3. Server building : go to "karnaboo-agent" and "cargo build"
+
 
 ## TO-DO list
 (not in order of priority)
