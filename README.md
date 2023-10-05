@@ -22,8 +22,8 @@ TBD
 
 ## Installation
 ### Prerequisites
-- a functionning local Rust installation
-- a functionning and reachable ArangoDB instance
+- a functioning local Rust installation
+- a functioning and reachable ArangoDB instance
 
 ### Building
 *** Karnaboo server ***
@@ -54,7 +54,7 @@ TBD
 
 
 ## Contributing
-All contributions and ideas are more than welcome.
+All contributions, tips and ideas are more than welcome.
 
 ## Authors and acknowledgment
 TBD
