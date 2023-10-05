@@ -8,8 +8,8 @@ As I wanted to learn Rust and programming in general, I set myself an overly amb
 
 I am releasing this tool as an open source project for the following reasons :
 - it might help someone somewhere someday
-- maybe some sysadmin has ideas for improving this tool
-- hopefully some contributors may be interested in helping and making this tool evolve into something bigger, more professional and more secure
+- maybe a sysadmin passing by could get ideas to improve this tool
+- hopefully a few contributors may be interested in helping and making this tool evolve into something bigger, more professional and more secure
 
 ## Usage
 
