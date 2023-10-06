@@ -64,7 +64,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] add an Arc<Mutex<T>> to make sure the database is accessed in a regulated way
 
 *** Agent side ***
-- [ ] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent 10.23.1.2 client")
+- [X] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent -s 10.23.1.2 -r client")
 - [ ] get local system informations to send real requests
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
 
