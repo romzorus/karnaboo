@@ -127,20 +127,6 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
                 vec![json!([""])]
             }
         };
-/*
-        Things to check in the database :
-            - the collections must exist (nodes and edges) and with the proper names
-            - each client must be connected to one (and only one) DISS and one (and only one) an OS
-            - each DISS must be connected to one (and only one) REPS and a least one OS
-            - each REPS must be connected to a least one OS
-            - for each OS connected to a client, it has to be connected to at least one DISS and one REPS
-            - a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
-            - a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
-            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates
-*/
-
-/* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
-
     Ok(())
 }
 
@@ -324,7 +310,20 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
-    
+    /*
+        Things to check in the database :
+            - the collections must exist (nodes and edges) and with the proper names
+            - each client must be connected to one (and only one) DISS and one (and only one) an OS
+            - each DISS must be connected to one (and only one) REPS and a least one OS
+            - each REPS must be connected to a least one OS
+            - for each OS connected to a client, it has to be connected to at least one DISS and one REPS
+            - a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
+            - a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
+            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates
+    */
+
+    /* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
+
     Ok(())
 }
 
@@ -395,18 +394,18 @@ pub enum NodeHostRequest {
 
 // }
 
-/* Notes pour fonctions à venir
+/* Notes for upcoming functions
 
+Useful AQL queries :
 
-AQL queries utiles :
-
-- Quels sont les clients gérés par [tel DISS] ?
+- Which clients are handled by [specific DISS] ?
 FOR val IN handles FILTER val._from == "diss/3084" RETURN val._to
 
-- Quels DISS gèrent [tel OS] ?
+- Which DISS are compatible with [specific OS] ?
 FOR val IN diss_compatible_with FILTER val._to == "os/3291" RETURN val._from
 
-- Quels sont les clients qui ne sont pas gérés par un DISS ?
+- Which clients are not connected to a DISS (to any of the existing DISSs) ?
 FOR client IN clients FILTER client._key NOT IN (FOR handle IN handles RETURN LTRIM(handle._to, "clients/")) RETURN client.hostname
 
+UPSERT: Update/replace an existing document, or create it in the case it does not exist.
 */
