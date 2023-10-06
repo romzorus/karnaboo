@@ -65,8 +65,9 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 
 *** Agent side ***
 - [X] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent -s 10.23.1.2 -r client")
-- [ ] get local system informations to send real requests
+- [X] get local system informations to send real requests
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
+- [X] identify each host in the database based on a unique ID
 
 *** Others ***
 - [ ] visuals for the "Principles" and "Usage" sections

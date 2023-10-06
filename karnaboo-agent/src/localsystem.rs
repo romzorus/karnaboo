@@ -1,53 +1,22 @@
-use sysinfo::{NetworkExt, NetworksExt, ProcessExt, System, SystemExt};
+use sysinfo::{NetworkExt, NetworksExt, ProcessExt, System, SystemExt, CpuExt};
+use machineid_rs::{IdBuilder, Encryption, HWIDComponent};
+use crate::LocalSystemConfig;
 
 
-pub fn get_local_system_info() {
-    // Do something
-
-    /* ********** Example from crate documentation **********
+pub fn get_local_system_conf() -> LocalSystemConfig {
+    // Unique Host ID building
+    let mut builder = IdBuilder::new(Encryption::SHA256);
+    builder.add_component(HWIDComponent::CPUID).add_component(HWIDComponent::MacAddress);
+    
+    // System information gathering
     let mut sys = System::new_all();
-
-    // First we update all information of our `System` struct.
     sys.refresh_all();
 
-    // We display all disks' information:
-    println!("=> disks:");
-    for disk in sys.disks() {
-        println!("{:?}", disk);
+    // Fetch and return the required informations as a LocalSystemConfig struct
+    LocalSystemConfig {
+        osname: sys.name().unwrap(),
+        osversion: sys.os_version().unwrap(),
+        hostname: sys.host_name().unwrap(),
+        hostid: builder.build("karnaboo").unwrap()
     }
-
-    // Network interfaces name, data received and data transmitted:
-    println!("=> networks:");
-    for (interface_name, data) in sys.networks() {
-        println!("{}: {}/{} B", interface_name, data.received(), data.transmitted());
-    }
-
-    // Components temperature:
-    println!("=> components:");
-    for component in sys.components() {
-        println!("{:?}", component);
-    }
-
-    println!("=> system:");
-    // RAM and swap information:
-    println!("total memory: {} bytes", sys.total_memory());
-    println!("used memory : {} bytes", sys.used_memory());
-    println!("total swap  : {} bytes", sys.total_swap());
-    println!("used swap   : {} bytes", sys.used_swap());
-
-    // Display system information:
-    println!("System name:             {:?}", sys.name());
-    println!("System kernel version:   {:?}", sys.kernel_version());
-    println!("System OS version:       {:?}", sys.os_version());
-    println!("System host name:        {:?}", sys.host_name());
-
-    // Number of CPUs:
-    println!("NB CPUs: {}", sys.cpus().len());
-
-    // Display processes ID, name na disk usage:
-    for (pid, process) in sys.processes() {
-        println!("[{}] {} {:?}", pid, process.name(), process.disk_usage());
-    }
-
-    **************************************** */
 }

@@ -20,16 +20,18 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let (role, server_socket) = commandline::command_line_parsing(args);
 
-    println!("Server : {:?}", server_socket);
-    println!("Role : {}", role);
-
-
-    // println!("Request summary :");
-    // println!("Server info : {}", server);
-    // println!("Requested role : {}", role);
+    println!("**** Request summary ****");
+    println!("Server address : {}", server_socket);
+    println!("Requested role : {}", role);
 
     // *********** 2. get local system information
-    // localsystem::get_local_system_info();
+    let local_conf: LocalSystemConfig = localsystem::get_local_system_conf();
+    println!("Local config :");
+    println!("  - OS name : {}", local_conf.osname);
+    println!("  - OS version : {}", local_conf.osversion);
+    println!("  - Hostname : {}", local_conf.hostname);
+    println!("  - HostID : {}", local_conf.hostid);
+
 
     // *********** 3. verify request consistency with the local system
     // *********** 4. send request
@@ -79,4 +81,12 @@ pub struct NodeDiss {
 pub struct NodeOs {
     pub name: String,
     pub version: String,
+}
+
+#[derive(Debug)]
+pub struct LocalSystemConfig {
+    osname: String,
+    osversion: String,
+    hostname: String,
+    hostid: String
 }

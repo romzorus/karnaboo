@@ -71,7 +71,7 @@ fn show_help_message() {
 
     println!("Please use the karnaboo agent as follows :");
     println!(r"██████████████████████████████████████████████████████");
-    println!(r"████ {} ████", "karnaboo-agent -s [IP_server:port] -r [role]");
+    println!(r"████ karnaboo-agent -s [IP_server:port] -r [role] ████");
     println!(r"██████████████████████████████████████████████████████");
     println!("  -s --server : server address and port");
     println!("  -r --role : role requested for this machine");
