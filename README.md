@@ -57,7 +57,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 *** Server side ***
 - [ ] add autocompletion
 - [ ] function to create own database from scratch in a working ArangoDB instance
-- [ ] function to check database consistency and coherence
+- [ ] function to check database consistency
 - [ ] fill "os" nodes with the actual repositories -> hardcoded list ? files available online through gitlab ?
 - [ ] handling configuration file : present at the root directory of the program or path specified as a command line argument
 - [ ] improve error handling and stability by getting rid of all "unwrap" and "expect" methods
@@ -72,6 +72,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] visuals for the "Principles" and "Usage" sections
 - [ ] comment the code
 - [ ] begin user documentation
+- [ ] encrypt communications
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
