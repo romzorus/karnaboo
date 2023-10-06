@@ -1,6 +1,7 @@
 # Karnaboo
 
 Streamline your update flows in open source environments !
+*(not finished yet)*
 
 ## Context and objective
 
@@ -60,6 +61,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] fill "os" nodes with the actual repositories -> hardcoded list ? files available online through gitlab ?
 - [ ] handling configuration file : present at the root directory of the program or path specified as a command line argument
 - [ ] improve error handling and stability by getting rid of all "unwrap" and "expect" methods
+- [ ] add an Arc<Mutex<T>> to make sure the database is accessed in a regulated way
 
 *** Agent side ***
 - [ ] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent 10.23.1.2 client")
@@ -67,7 +69,9 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
 
 *** Others ***
-- [ ] Visuals for the "Principles" and "Usage" sections
+- [ ] visuals for the "Principles" and "Usage" sections
+- [ ] comment the code
+- [ ] begin user documentation
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
