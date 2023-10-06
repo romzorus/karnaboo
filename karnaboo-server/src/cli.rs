@@ -43,7 +43,7 @@ pub async fn thread_cli(
         //     user_command_checker()
         //     user_command_exec()
         // */
-        let readline = rl.readline(format!("{}", "Command $ ".bold().white()).as_str());
+        let readline = rl.readline(format!("{}", "Command $ ".bold()).as_str());
 
         match readline {
             Ok(line) => {

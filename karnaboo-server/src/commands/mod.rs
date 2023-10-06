@@ -17,27 +17,27 @@ pub fn help() {
     println!("--------||-------------||------------------------");
     println!(
         "{}    °° Show this help message °° h | ?",
-        "help".bold().white()
+        "help".bold()
     );
     println!(
         "{}    °° Terminates silvadmin process °° ex | quit | q",
-        "exit".bold().white()
+        "exit".bold()
     );
     println!(
         "{}  °° Informations about the master server °° stat",
-        "status".bold().white()
+        "status".bold()
     );
     println!(
         "{}    °° Directly interact with the database through AQL queries °° dbm",
-        "dbmode".bold().white()
+        "dbmode".bold()
     );
     println!(
         "{}    °° Check consistency and coherence of your database °° dbc",
-        "dbcheck".bold().white()
+        "dbcheck".bold()
     );
     println!(
         "{}    °° Answer hosts requests to be handled °° ansreq | ar",
-        "answer request".bold().white()
+        "answer request".bold()
     );
     println!("");
 }

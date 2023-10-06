@@ -76,7 +76,7 @@ pub async fn direct_user_interaction_with_db(db_info: &DatabaseInfo) -> Result<(
 
             let _result_command: Vec<serde_json::Value> = match db.aql_str(user_input_str).await {
                 Ok(content) => {
-                    println!("{}", "Database return".white());
+                    println!("Database return");
                     println!("{:?}", content);
                     content
                 }
@@ -117,7 +117,7 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
     let _result_command: Vec<serde_json::Value> =
         match db.aql_str(client_creation_query.as_str()).await {
             Ok(content) => {
-                println!("{}", "Database return".white());
+                println!("Database return");
                 println!("{:?}", content);
                 content
             }
@@ -153,7 +153,7 @@ pub async fn db_create_diss(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     let _result_command: Vec<serde_json::Value> =
         match db.aql_str(diss_creation_query.as_str()).await {
             Ok(content) => {
-                println!("{}", "Database return".white());
+                println!("Database return");
                 println!("{:?}", content);
                 content
             }
@@ -189,7 +189,7 @@ pub async fn db_create_reps(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     let _result_command: Vec<serde_json::Value> =
         match db.aql_str(reps_creation_query.as_str()).await {
             Ok(content) => {
-                println!("{}", "Database return".white());
+                println!("Database return");
                 println!("{:?}", content);
                 content
             }
