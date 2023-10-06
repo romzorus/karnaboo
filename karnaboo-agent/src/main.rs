@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
-use colored::Colorize;
-use std::{env, process::exit};
+use std::env;
+use std::net::SocketAddr;
 
+mod commandline;
 mod localsystem;
 mod networking;
 
@@ -17,51 +18,9 @@ fn main() {
 */
     // *********** 1. parse the request
     let args: Vec<String> = env::args().collect();
+    let (role, server_socket) = commandline::command_line_parsing(args);
 
-    let mut role = String::with_capacity(6); // "client | reps | diss"
-    let mut server = String::with_capacity(21); // "IP:port"
-
-    if args.len() == 1 {
-        show_problem_arguments_message();
-        exit(1);
-    } else {
-        let args_cloned = args.clone();
-        for (i, _arg) in args_cloned.into_iter().enumerate() {
-
-            // Looking for server and role arguments
-            if ["-s", "--server"].contains(&args[i].as_str()) { // There needs to be a following argument...
-                if args.len() >= (i+2) { // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
-                    server = args[i+1].clone();
-                } else { // ... otherwise :
-                    show_problem_arguments_message();
-                    exit(1);
-                }
-            } else if ["-r", "--role"].contains(&args[i].as_str()) { // There needs to be a following argument...
-                if args.len() >= (i+2) { // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
-                    role = args[i+1].clone();
-                    if !["client", "CLIENT", "Client", "DISS", "diss", "REPS", "reps"].contains(&role.as_str()) { // if argument not consistent with possible roles, just abort
-                        show_problem_arguments_message();
-                        exit(1);
-                    }
-                } else { // ... otherwise :
-                    show_problem_arguments_message();
-                    exit(1);
-                }
-            } else if ["-h", "--help"].contains(&args[i].as_str()) {
-                show_help_message();
-                break;
-            }
-        }
-
-        // If server or role argument is missing, abort
-        if server.is_empty() || role.is_empty() {
-            show_problem_arguments_message();
-            exit(1);
-        }
-
-    }
-    
-    println!("Server : {}", server);
+    println!("Server : {:?}", server_socket);
     println!("Role : {}", role);
 
 
@@ -94,30 +53,6 @@ fn main() {
     
 }
 
-fn show_help_message() {
-
-    println!("Please use the karnaboo agent as follows :");
-    println!(r"██████████████████████████████████████████████████████");
-    println!(r"████ {} ████", "karnaboo-agent -s [IP_server:port] -r [role]");
-    println!(r"██████████████████████████████████████████████████████");
-    println!("  -s --server : server address and port");
-    println!("  -r --role : role requested for this machine");
-    println!("");
-    println!("Example :");
-    println!("We want this machine to become a DISS. The karnaboo server");
-    println!("is reachable at 192.168.1.1:9015.");
-    println!("");
-    println!("$ {}", "karnaboo-agent -s 192.168.1.1:9015 -r diss");
-    println!("");
-    println!("Possibles roles are client, diss or reps.");
-    println!("");
-}
-
-fn show_problem_arguments_message() {
-    println!("{}", "Missing or wrong arguments".bold().red());
-    show_help_message();
-}
-
 // Defining data types and enums to build request
 #[derive(Debug, Serialize)]
 enum NodeHostRequest {
@@ -145,16 +80,3 @@ pub struct NodeOs {
     pub name: String,
     pub version: String,
 }
-
-/* ***** Note for later *****
-
-Example for server argument parsing :
-use std::net::SocketAddr;
-
-fn main() {
-    let server_details = "127.0.0.1:80";
-    let server: SocketAddr = server_details
-        .parse()
-        .expect("Unable to parse socket address");
-    println!("{:?}", server);
-} */
