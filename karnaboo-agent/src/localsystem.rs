@@ -1,4 +1,3 @@
-use crate::LocalSystemConfig;
 use colored::Colorize;
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, NetworksExt, ProcessExt, System, SystemExt};
@@ -62,13 +61,21 @@ pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) 
                 .red()
             );
         }
-    } else if role == "client" { 
+    } else if role == "client" {
         // No criteria to check for client role at the moment
         feasability = true;
     } else {
         println!("Unable to check feasability. Incorrect role value.");
     }
-    
 
     feasability
+}
+
+#[derive(Debug)]
+pub struct LocalSystemConfig {
+    pub osname: String,
+    pub osversion: String,
+    pub hostname: String,
+    pub hostid: String,
+    pub disks_infos: Vec<u64>, // Only stores the free space of each disk (unit : gb)
 }
