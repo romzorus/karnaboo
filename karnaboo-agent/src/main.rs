@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::env;
 use std::net::SocketAddr;
 use std::process::exit;
@@ -7,11 +6,14 @@ mod commandline;
 mod localsystem;
 mod networking;
 
+use crate::localsystem::LocalSystemConfig;
+use crate::networking::{NodeHostRequest, NodeClient, NodeDiss, NodeReps};
+
 fn main() {
     /* Global workflow :
         1. parse the request
         2. get local system information
-        3. verify request coherence according to system information
+        3. verify request consistency regarding system information
         4. send request
         5. wait for reception confirmation
         6. wait for decision and technical informations
@@ -19,7 +21,7 @@ fn main() {
     */
     // *********** 1. parse the request
     let args: Vec<String> = env::args().collect();
-    let mut role = String::with_capacity(6); // "client | reps | diss"
+    let mut role = String::with_capacity(6); // "client | diss | reps"
     let mut server_socket: SocketAddr = "0.0.0.0:0".parse().unwrap();
 
     match commandline::command_line_parsing(args) {
@@ -48,65 +50,44 @@ fn main() {
     // *********** 3. verify request consistency with the local system
     println!("Checking your system compatibility...");
     let request_consistency = localsystem::check_request_feasability(&role, &local_conf);
-    if request_consistency {
-        println!("Your system is compatible with your request.");
-        // Proceed with the rest
-    } else {
+    if !request_consistency {
         println!("The requirements are not met for your request.");
         exit(1);
     }
+    println!("Your request is compatible with your system.");
+
     // *********** 4. send request
+    // Building content
+    let content: NodeHostRequest;
+    if role == "client" {
+        content = NodeHostRequest::Client(NodeClient {
+            hostname: local_conf.hostname,
+            ip: String::from("0.0.0.0"),
+            osname: local_conf.osname,
+            osversion: local_conf.osversion,
+            hostid: local_conf.hostid
+        });
+    } else if role == "diss" {
+        content = NodeHostRequest::Diss(NodeDiss {
+            hostname: local_conf.hostname,
+            ip: String::from("0.0.0.0"),
+            osname: local_conf.osname,
+            osversion: local_conf.osversion,
+            hostid: local_conf.hostid
+        });
+    } else {
+        content = NodeHostRequest::Reps(NodeReps {
+            hostname: local_conf.hostname,
+            ip: String::from("0.0.0.0"),
+            osname: local_conf.osname,
+            osversion: local_conf.osversion,
+            hostid: local_conf.hostid
+        });
+    }
 
-    // Building request content
-    // let content = NodeClient {
-    //     ip: String::from("10.99.99.99"),
-    //     hostname: String::from("zoulou-PC"),
-    // };
-    // let request_content = NodeHostRequest::Client(content);
-
-    // Sending request to server
-    // println!("Sending request to server.");
-    // println!("Request content : {:?}", request_content);
-    // send_request(request_content);
+    networking::send_request(content, server_socket);
 
     // *********** 5. wait for reception confirmation
     // *********** 6. wait for decision and technical informations
     // *********** 7. implement the decision with technical informations
-}
-
-// Defining data types and enums to build request
-#[derive(Debug, Serialize)]
-enum NodeHostRequest {
-    Client(NodeClient),
-    Diss(NodeDiss),
-    Reps(NodeReps),
-}
-#[derive(Debug, Serialize)]
-pub struct NodeClient {
-    pub hostname: String,
-    pub ip: String,
-}
-#[derive(Debug, Serialize)]
-pub struct NodeReps {
-    pub hostname: String,
-    pub ip: String,
-}
-#[derive(Debug, Serialize)]
-pub struct NodeDiss {
-    pub hostname: String,
-    pub ip: String,
-}
-#[derive(Debug, Serialize)]
-pub struct NodeOs {
-    pub name: String,
-    pub version: String,
-}
-
-#[derive(Debug)]
-pub struct LocalSystemConfig {
-    osname: String,
-    osversion: String,
-    hostname: String,
-    hostid: String,
-    disks_infos: Vec<u64>, // Only stores the free space of each disk (unit : gb)
 }
