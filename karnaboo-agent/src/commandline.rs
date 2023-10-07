@@ -25,12 +25,12 @@ pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr), (
                         }
                         Err(e) => {
                             println!("{}", format!("{:?}", e).red().bold());
-                            return Err(())
+                            return Err(());
                         }
                     }
                 } else {
                     // ... otherwise :
-                    return Err(())
+                    return Err(());
                 }
             } else if ["-r", "--role"].contains(&args[i].as_str()) {
                 // There needs to be a following argument...
@@ -39,10 +39,10 @@ pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr), (
                     role = args[i + 1].clone().to_lowercase();
                     if !["client", "diss", "reps"].contains(&role.as_str()) {
                         // if argument not consistent with possible roles, just abort
-                        return Err(())
+                        return Err(());
                     }
                 } else {
-                    return Err(())
+                    return Err(());
                 }
             } else if ["-h", "--help"].contains(&args[i].as_str()) {
                 show_help_message();
@@ -52,12 +52,12 @@ pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr), (
 
         // After parsing all the input, if either server or role argument is missing, abort
         if server.is_empty() || role.is_empty() {
-            return Err(())
+            return Err(());
         }
 
         Ok((role, server_socket))
     } else {
-        return Err(())
+        return Err(());
     }
 }
 
