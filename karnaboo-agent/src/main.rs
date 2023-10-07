@@ -1,24 +1,37 @@
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::net::SocketAddr;
+use std::process::exit;
 
 mod commandline;
 mod localsystem;
 mod networking;
 
 fn main() {
-/* Global workflow :
-    1. parse the request
-    2. get local system information
-    3. verify request coherence according to system information
-    4. send request
-    5. wait for reception confirmation
-    6. wait for decision and technical informations
-    7. implement the decision with technical informations
-*/
+    /* Global workflow :
+        1. parse the request
+        2. get local system information
+        3. verify request coherence according to system information
+        4. send request
+        5. wait for reception confirmation
+        6. wait for decision and technical informations
+        7. implement the decision with technical informations
+    */
     // *********** 1. parse the request
     let args: Vec<String> = env::args().collect();
-    let (role, server_socket) = commandline::command_line_parsing(args);
+    let mut role = String::with_capacity(6); // "client | reps | diss"
+    let mut server_socket: SocketAddr = "0.0.0.0:0".parse().unwrap();
+
+    match commandline::command_line_parsing(args) {
+        Ok((tmp_role, tmp_server_socket)) => {
+            role = tmp_role;
+            server_socket = tmp_server_socket;
+        }
+        Err(()) => {
+            commandline::show_problem_arguments_message();
+            exit(1)
+        }
+    }
 
     println!("**** Request summary ****");
     println!("Server address : {}", server_socket);
@@ -32,8 +45,16 @@ fn main() {
     println!("  - Hostname : {}", local_conf.hostname);
     println!("  - HostID : {}", local_conf.hostid);
 
-
     // *********** 3. verify request consistency with the local system
+    println!("Checking your system compatibility...");
+    let request_consistency = localsystem::check_request_feasability(&role, &local_conf);
+    if request_consistency {
+        println!("Your system is compatible with your request.");
+        // Proceed with the rest
+    } else {
+        println!("The requirements are not met for your request.");
+        exit(1);
+    }
     // *********** 4. send request
 
     // Building request content
@@ -51,8 +72,6 @@ fn main() {
     // *********** 5. wait for reception confirmation
     // *********** 6. wait for decision and technical informations
     // *********** 7. implement the decision with technical informations
-
-    
 }
 
 // Defining data types and enums to build request
@@ -88,5 +107,6 @@ pub struct LocalSystemConfig {
     osname: String,
     osversion: String,
     hostname: String,
-    hostid: String
+    hostid: String,
+    disks_infos: Vec<u64>, // Only stores the free space of each disk (unit : gb)
 }
