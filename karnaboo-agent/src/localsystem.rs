@@ -62,12 +62,13 @@ pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) 
                 .red()
             );
         }
-    }
-
-    // No criteria to check for client role at the moment
-    if role == "client" {
+    } else if role == "client" { 
+        // No criteria to check for client role at the moment
         feasability = true;
+    } else {
+        println!("Unable to check feasability. Incorrect role value.");
     }
+    
 
     feasability
 }
