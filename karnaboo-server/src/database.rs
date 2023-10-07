@@ -319,7 +319,8 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
             - for each OS connected to a client, it has to be connected to at least one DISS and one REPS
             - a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
             - a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
-            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates
+            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates*
+            - each OS must be connected to exactly one "become_client", one "become_diss" and one "become_reps" script
     */
 
     /* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
