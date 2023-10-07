@@ -331,18 +331,27 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
 pub struct NodeClient {
     pub hostname: String,
     pub ip: String,
+    pub osname: String,
+    pub osversion: String,
+    pub hostid: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeReps {
     pub hostname: String,
     pub ip: String,
+    pub osname: String,
+    pub osversion: String,
+    pub hostid: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeDiss {
     pub hostname: String,
     pub ip: String,
+    pub osname: String,
+    pub osversion: String,
+    pub hostid: String
 }
 
 pub struct NodeOs {
