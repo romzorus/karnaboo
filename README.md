@@ -45,11 +45,12 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 2. Organize virtually your update flows by linking nodes in the database
 3. Enforce your virtual structure through the server/agents
 
-### What is functioning so far
+### What is working so far
 
-- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you full control of the database
+- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control of the database (up to a point)
 - agent is able to send a request through the network
 - server can receive and buffer multiple requests and let the administrator (user) decide to agree or drop each one
+- agent get local informations and generate a unique HostID
 
 ## TO-DO list
 (not in order of priority)
@@ -64,10 +65,8 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] add an Arc<Mutex<T>> to make sure the database is accessed in a regulated way
 
 *** Agent side ***
-- [X] pass arguments in the command line (no need for a whole CLI at the moment, maybe later) : server address and future role of the host ("./karnaboo-agent -s 10.23.1.2 -r client")
-- [X] get local system informations to send real requests
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
-- [X] identify each host in the database based on a unique ID
+- [ ] get a script and its parameters from the server, execute it and send the result back to the server
 
 *** Others ***
 - [ ] visuals for the "Principles" and "Usage" sections
