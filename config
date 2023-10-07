@@ -1,0 +1,16 @@
+# This config file is just an example. The fields are the right ones
+# but the values must be changed according to your situation
+
+# How to connect to your ArangoDB instance
+[databaseinfo]
+db_name=_system
+arangodb_server_address=127.0.0.1
+arangodb_server_port=8529
+login=root
+password=my-very-secure-password
+
+# How can karnaboo server be reached from the outside,
+# on which IP and port of the local machine does it need to listen ?
+[networking]
+server_address=127.0.0.1
+server_port=9015
