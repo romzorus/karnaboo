@@ -6,16 +6,14 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-use arangors::uclient::reqwest::ReqwestClient;
-use arangors::Database;
-use arangors::{ClientError, Connection};
+
+use arangors::Connection;
 use colored::Colorize;
 use futures::lock::Mutex;
 use rustyline::error::ReadlineError;
 use rustyline::{DefaultEditor, Result};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, value::Value};
-use std::io::{stdout, Write};
+use serde_json::json;
 use std::sync::Arc;
 
 use crate::commands::yes_or_no_question;
@@ -38,7 +36,12 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
-    println!("{}", "Connection to database established (AQL mode)".bold().yellow());
+    println!(
+        "{}",
+        "Connection to database established (AQL mode)"
+            .bold()
+            .yellow()
+    );
 
     let mut rl = DefaultEditor::new()?;
 
@@ -190,26 +193,35 @@ pub async fn answer_requests(
 }
 
 pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
-    
     println!("Database consistency checking...");
 
+    // 1. Check database and collections existence and create them if necessary
     println!("");
     println!("--- Checking database ---");
     let _ = db_create_database(db_info).await;
 
     println!("");
     println!("--- Checking collections ---");
-    let _ = db_create_node_collection(db_info, "clients").await;
-    let _ = db_create_node_collection(db_info, "diss").await;
-    let _ = db_create_node_collection(db_info, "reps").await;
-    let _ = db_create_node_collection(db_info, "os").await;
-    let _ = db_create_node_collection(db_info, "scripts").await;
-    let _ = db_create_edge_collection(db_info, "diss_compatible_with").await;
-    let _ = db_create_edge_collection(db_info, "handles").await;
-    let _ = db_create_edge_collection(db_info, "redistributes_to").await;
-    let _ = db_create_edge_collection(db_info, "reps_compatible_with").await;
-    let _ = db_create_edge_collection(db_info, "script_compatible_with").await;
-    let _ = db_create_edge_collection(db_info, "uses_os").await;
+
+    for node_collection_name in [
+        "clients",
+        "diss",
+        "reps",
+        "os",
+        "scripts"] {
+        let _ = db_create_node_collection(db_info, node_collection_name).await;
+    }
+
+    for edge_collection_name in [
+        "diss_compatible_with",
+        "handles",
+        "redistributes_to",
+        "reps_compatible_with",
+        "script_compatible_with",
+        "uses_os",
+    ] {
+        let _ = db_create_edge_collection(db_info, edge_collection_name).await;
+    }
 
     /*
         Required collections :
@@ -247,7 +259,6 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
 }
 
 pub async fn db_create_database(db_info: &DatabaseInfo) -> Result<()> {
-
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -260,25 +271,41 @@ pub async fn db_create_database(db_info: &DatabaseInfo) -> Result<()> {
     .await
     .unwrap();
 
-    match db_connection.create_database(db_info.db_name.as_str()).await {
+    match db_connection
+        .create_database(db_info.db_name.as_str())
+        .await
+    {
         Ok(_) => {
-            println!("- database \'{}\' : {} - created", db_info.db_name, "Ok".green().bold());
+            println!(
+                "- database \'{}\' : {} - created",
+                db_info.db_name,
+                "Ok".green().bold()
+            );
         }
         Err(e) => {
             if format!("{:?}", e).contains("duplicate database name") {
-                println!("- database \'{}\' : {} - already existing", db_info.db_name, "OK".green().bold());
+                println!(
+                    "- database \'{}\' : {} - already exists",
+                    db_info.db_name,
+                    "OK".green().bold()
+                );
             } else {
-                println!("- database \'{}\' : {} - problem encountered in creating database", db_info.db_name, "NOK".red().bold());
+                println!(
+                    "- database \'{}\' : {} - problem encountered in creating database",
+                    db_info.db_name,
+                    "NOK".red().bold()
+                );
                 println!("{:?}", e);
             }
-            
         }
     }
     Ok(())
 }
 
-pub async fn db_create_node_collection(db_info: &DatabaseInfo, collection_name: &str) -> Result<()> {
-
+pub async fn db_create_node_collection(
+    db_info: &DatabaseInfo,
+    collection_name: &str,
+) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -295,24 +322,37 @@ pub async fn db_create_node_collection(db_info: &DatabaseInfo, collection_name: 
 
     match db.create_collection(collection_name).await {
         Ok(_) => {
-            println!("- collection \'{}\' : {} - created", collection_name, "Ok".green().bold());
+            println!(
+                "- collection \'{}\' : {} - created",
+                collection_name,
+                "Ok".green().bold()
+            );
         }
         Err(e) => {
             if format!("{:?}", e).contains("duplicate name") {
-                println!("- collection \'{}\' : {} - already existing", collection_name, "OK".green().bold());
+                println!(
+                    "- collection \'{}\' : {} - already exists",
+                    collection_name,
+                    "OK".green().bold()
+                );
             } else {
-                println!("- collection \'{}\' : {} - problem encountered in creating collection", collection_name, "NOK".red().bold());
+                println!(
+                    "- collection \'{}\' : {} - problem encountered in creating collection",
+                    collection_name,
+                    "NOK".red().bold()
+                );
                 println!("{:?}", e);
             }
-            
         }
     }
-    
+
     Ok(())
 }
 
-pub async fn db_create_edge_collection(db_info: &DatabaseInfo, collection_name: &str) -> Result<()> {
-
+pub async fn db_create_edge_collection(
+    db_info: &DatabaseInfo,
+    collection_name: &str,
+) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -329,19 +369,30 @@ pub async fn db_create_edge_collection(db_info: &DatabaseInfo, collection_name: 
 
     match db.create_edge_collection(collection_name).await {
         Ok(_) => {
-            println!("- collection \'{}\' : {} - created", collection_name, "Ok".green().bold());
+            println!(
+                "- collection \'{}\' : {} - created",
+                collection_name,
+                "Ok".green().bold()
+            );
         }
         Err(e) => {
             if format!("{:?}", e).contains("duplicate name") {
-                println!("- collection \'{}\' : {} - already existing", collection_name, "OK".green().bold());
+                println!(
+                    "- collection \'{}\' : {} - already existing",
+                    collection_name,
+                    "OK".green().bold()
+                );
             } else {
-                println!("- collection \'{}\' : {} - problem encountered in creating collection", collection_name, "NOK".red().bold());
+                println!(
+                    "- collection \'{}\' : {} - problem encountered in creating collection",
+                    collection_name,
+                    "NOK".red().bold()
+                );
                 println!("{:?}", e);
             }
-            
         }
     }
-    
+
     Ok(())
 }
 
@@ -361,8 +412,12 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
     let client_creation_query = format!(
-        "insert {{\"hostname\": \"{}\", \"ip\": \"{}\" }} into clients",
-        host_info.hostname, host_info.ip
+        r#"insert {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "hostid": "{}" }} into clients"#,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info.hostid
     );
 
     let _result_command: Vec<serde_json::Value> =
@@ -453,10 +508,9 @@ pub async fn db_create_reps(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     Ok(())
 }
 
-/* ===============================================
-============== Types declarations ================
- ================================================= */
-
+/* ============================================================================
+========================== Types declarations =================================
+ ============================================================================== */
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeClient {
@@ -464,7 +518,7 @@ pub struct NodeClient {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String
+    pub hostid: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -473,7 +527,7 @@ pub struct NodeReps {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String
+    pub hostid: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -482,7 +536,7 @@ pub struct NodeDiss {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String
+    pub hostid: String,
 }
 
 pub struct NodeOs {
