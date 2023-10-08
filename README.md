@@ -63,6 +63,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] handling configuration file : present at the root directory of the program or path specified as a command line argument
 - [ ] improve error handling and stability by getting rid of all "unwrap" and "expect" methods
 - [ ] add an Arc<Mutex<T>> to make sure the database is accessed in a regulated way
+- [ ] have a single connexion to the database and pass its reference to the functions (instead of having each function create its own connexion each time)
 
 *** Agent side ***
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
