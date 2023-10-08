@@ -91,7 +91,7 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            hostid: content.hostid.clone() });
+                            _key: content._key.clone() });
                     }
                     NodeHostRequest::Diss(content) => {
                         println!(
@@ -109,7 +109,7 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            hostid: content.hostid.clone() });
+                            _key: content._key.clone() });
                     }
                     NodeHostRequest::Reps(content) => {
                         println!(
@@ -127,7 +127,7 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            hostid: content.hostid.clone() });
+                            _key: content._key.clone() });
                     }
                 }
                 

@@ -29,7 +29,7 @@ pub struct NodeClient {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 #[derive(Debug, Serialize)]
 pub struct NodeReps {
@@ -37,7 +37,7 @@ pub struct NodeReps {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 #[derive(Debug, Serialize)]
 pub struct NodeDiss {
@@ -45,7 +45,7 @@ pub struct NodeDiss {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 #[derive(Debug, Serialize)]
 pub struct NodeOs {

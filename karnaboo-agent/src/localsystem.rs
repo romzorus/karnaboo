@@ -23,7 +23,7 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
         osname: sys.name().unwrap(),
         osversion: sys.os_version().unwrap(),
         hostname: sys.host_name().unwrap(),
-        hostid: builder.build("karnaboo").unwrap(),
+        _key: builder.build("karnaboo").unwrap(),
         disks_infos: disks_info,
     }
 }
@@ -76,6 +76,6 @@ pub struct LocalSystemConfig {
     pub osname: String,
     pub osversion: String,
     pub hostname: String,
-    pub hostid: String,
+    pub _key: String,
     pub disks_infos: Vec<u64>, // Only stores the free space of each disk (unit : gb)
 }
