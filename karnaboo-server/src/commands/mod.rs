@@ -28,8 +28,8 @@ pub fn help() {
         "status".bold()
     );
     println!(
-        "{}    °° Directly interact with the database through AQL queries °° dbm",
-        "dbmode".bold()
+        "{}    °° Directly enter AQL queries and get results from the database °° aql",
+        "aqlmode".bold()
     );
     println!(
         "{}    °° Check consistency and coherence of your database °° dbc",
