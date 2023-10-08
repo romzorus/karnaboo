@@ -78,8 +78,8 @@ pub async fn thread_cli(
             commands::status_info();
         } else if ["help", "h", "?"].contains(&user_command_str) {
             commands::help();
-        } else if ["dbmode", "dbm"].contains(&user_command_str) {
-            let return_db_cli = database::direct_user_interaction_with_db(&db_info);
+        } else if ["aqlmode", "aql"].contains(&user_command_str) {
+            let return_db_cli = database::aql_mode(&db_info);
             let _ = return_db_cli.await;
         } else if ["dbcheck", "dbc"].contains(&user_command_str) {
             let return_db_check = database::db_check(&db_info);
