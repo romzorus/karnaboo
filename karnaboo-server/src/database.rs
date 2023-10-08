@@ -21,7 +21,9 @@ use std::sync::Arc;
 use crate::commands::yes_or_no_question;
 use crate::configuration::DatabaseInfo;
 
-pub async fn direct_user_interaction_with_db(db_info: &DatabaseInfo) -> Result<()> {
+// Let the user directly interact with the database via AQL queries ("AQL mode").
+// With AQL queries, the user is limited and cannot create or delete database or collections.
+pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -36,7 +38,7 @@ pub async fn direct_user_interaction_with_db(db_info: &DatabaseInfo) -> Result<(
 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
-    println!("{}", "Connection to database established".bold().yellow());
+    println!("{}", "Connection to database established (AQL mode)".bold().yellow());
 
     let mut rl = DefaultEditor::new()?;
 
@@ -91,6 +93,255 @@ pub async fn direct_user_interaction_with_db(db_info: &DatabaseInfo) -> Result<(
     }
 
     println!("Back to main command mode");
+    Ok(())
+}
+
+pub async fn answer_requests(
+    waiting_requests: &Arc<Mutex<Vec<NodeHostRequest>>>,
+    db_info: &DatabaseInfo,
+) {
+    let mut waiting_requests_contents = waiting_requests.lock().await;
+    let total_number = &waiting_requests_contents.len();
+
+    if *total_number == 0 as usize {
+        println!("{}", "No request waiting.".bold().blue());
+        return;
+    }
+
+    let list_of_waiting_requests = waiting_requests_contents.clone();
+
+    for (i, req) in list_of_waiting_requests.into_iter().enumerate() {
+        print!(
+            "{}",
+            format!("Request {} / {} : ", i + 1, total_number)
+                .bold()
+                .blue()
+        );
+
+        match req {
+            NodeHostRequest::Client(host_info) => {
+                println!(
+                    "{}",
+                    format!(
+                        "\'{}\' at {} => New client ? ",
+                        host_info.hostname, host_info.ip
+                    )
+                    .bold()
+                    .blue()
+                );
+
+                if yes_or_no_question() {
+                    // Send data to database and erase the request
+                    let return_db_client_creation = db_create_client(&db_info, host_info);
+                    let _ = return_db_client_creation.await;
+
+                    println!("{}", "Client added to database".bold().blue());
+                    waiting_requests_contents.remove(0);
+                } else {
+                    // Simply erasing the request
+                    waiting_requests_contents.remove(0);
+                    println!("{}", "Request dropped".bold().blue());
+                }
+            }
+            NodeHostRequest::Diss(host_info) => {
+                println!(
+                    "{}",
+                    format!(
+                        "\'{}\' at {} => New DISS ? ",
+                        host_info.hostname, host_info.ip
+                    )
+                    .bold()
+                    .blue()
+                );
+
+                if yes_or_no_question() {
+                    // Send data to database and erase the request
+
+                    println!("{}", "DISS added to database".bold().blue());
+                    waiting_requests_contents.remove(0);
+                } else {
+                    // Simply erasing the request
+                    waiting_requests_contents.remove(0);
+                }
+            }
+            NodeHostRequest::Reps(host_info) => {
+                println!(
+                    "{}",
+                    format!(
+                        "\'{}\' at {} => New REPS ? ",
+                        host_info.hostname, host_info.ip
+                    )
+                    .bold()
+                    .blue()
+                );
+
+                if yes_or_no_question() {
+                    // Send data to database and erase the request
+
+                    println!("{}", "REPS added to database".bold().blue());
+                    waiting_requests_contents.remove(0);
+                } else {
+                    // Simply erasing the request
+                    waiting_requests_contents.remove(0);
+                }
+            }
+        }
+    }
+}
+
+pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
+    
+    println!("Database consistency checking...");
+
+    println!("");
+    println!("--- Checking database ---");
+    let _ = db_create_database(db_info).await;
+
+    println!("");
+    println!("--- Checking collections ---");
+    let _ = db_create_node_collection(db_info, "clients").await;
+    let _ = db_create_node_collection(db_info, "diss").await;
+    let _ = db_create_node_collection(db_info, "reps").await;
+    let _ = db_create_node_collection(db_info, "os").await;
+    let _ = db_create_node_collection(db_info, "scripts").await;
+    let _ = db_create_edge_collection(db_info, "diss_compatible_with").await;
+    let _ = db_create_edge_collection(db_info, "handles").await;
+    let _ = db_create_edge_collection(db_info, "redistributes_to").await;
+    let _ = db_create_edge_collection(db_info, "reps_compatible_with").await;
+    let _ = db_create_edge_collection(db_info, "script_compatible_with").await;
+    let _ = db_create_edge_collection(db_info, "uses_os").await;
+
+    /*
+        Required collections :
+            Nodes :
+            - clients
+            - diss
+            - reps
+            - os
+            - scripts
+
+            Edges :
+            - diss_compatible_with
+            - handles
+            - redistributes_to
+            - reps_compatible_with
+            - script_compatible_with
+            - uses_os
+
+
+        Things to check in the database :
+            [X] the collections must exist (nodes and edges) and with the proper names
+            [ ] each client must be connected to one (and only one) DISS and one (and only one) an OS
+            [ ] each DISS must be connected to one (and only one) REPS and a least one OS
+            [ ] each REPS must be connected to a least one OS
+            [ ] for each OS connected to a client, it has to be connected to at least one DISS and one REPS
+            [ ] a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
+            [ ] a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
+            [ ] for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates*
+            [ ] each OS must be connected to exactly one "become_client", one "become_diss" and one "become_reps" script
+    */
+
+    /* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
+
+    Ok(())
+}
+
+pub async fn db_create_database(db_info: &DatabaseInfo) -> Result<()> {
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    match db_connection.create_database(db_info.db_name.as_str()).await {
+        Ok(_) => {
+            println!("- database \'{}\' : {} - created", db_info.db_name, "Ok".green().bold());
+        }
+        Err(e) => {
+            if format!("{:?}", e).contains("duplicate database name") {
+                println!("- database \'{}\' : {} - already existing", db_info.db_name, "OK".green().bold());
+            } else {
+                println!("- database \'{}\' : {} - problem encountered in creating database", db_info.db_name, "NOK".red().bold());
+                println!("{:?}", e);
+            }
+            
+        }
+    }
+    Ok(())
+}
+
+pub async fn db_create_node_collection(db_info: &DatabaseInfo, collection_name: &str) -> Result<()> {
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
+    match db.create_collection(collection_name).await {
+        Ok(_) => {
+            println!("- collection \'{}\' : {} - created", collection_name, "Ok".green().bold());
+        }
+        Err(e) => {
+            if format!("{:?}", e).contains("duplicate name") {
+                println!("- collection \'{}\' : {} - already existing", collection_name, "OK".green().bold());
+            } else {
+                println!("- collection \'{}\' : {} - problem encountered in creating collection", collection_name, "NOK".red().bold());
+                println!("{:?}", e);
+            }
+            
+        }
+    }
+    
+    Ok(())
+}
+
+pub async fn db_create_edge_collection(db_info: &DatabaseInfo, collection_name: &str) -> Result<()> {
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
+    match db.create_edge_collection(collection_name).await {
+        Ok(_) => {
+            println!("- collection \'{}\' : {} - created", collection_name, "Ok".green().bold());
+        }
+        Err(e) => {
+            if format!("{:?}", e).contains("duplicate name") {
+                println!("- collection \'{}\' : {} - already existing", collection_name, "OK".green().bold());
+            } else {
+                println!("- collection \'{}\' : {} - problem encountered in creating collection", collection_name, "NOK".red().bold());
+                println!("{:?}", e);
+            }
+            
+        }
+    }
+    
     Ok(())
 }
 
@@ -202,131 +453,10 @@ pub async fn db_create_reps(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     Ok(())
 }
 
-pub async fn answer_requests(
-    waiting_requests: &Arc<Mutex<Vec<NodeHostRequest>>>,
-    db_info: &DatabaseInfo,
-) {
-    let mut waiting_requests_contents = waiting_requests.lock().await;
-    let total_number = &waiting_requests_contents.len();
+/* ===============================================
+============== Types declarations ================
+ ================================================= */
 
-    if *total_number == 0 as usize {
-        println!("{}", "No request waiting.".bold().blue());
-        return;
-    }
-
-    let list_of_waiting_requests = waiting_requests_contents.clone();
-
-    for (i, req) in list_of_waiting_requests.into_iter().enumerate() {
-        print!(
-            "{}",
-            format!("Request {} / {} : ", i + 1, total_number)
-                .bold()
-                .blue()
-        );
-
-        match req {
-            NodeHostRequest::Client(host_info) => {
-                println!(
-                    "{}",
-                    format!(
-                        "\'{}\' at {} => New client ? ",
-                        host_info.hostname, host_info.ip
-                    )
-                    .bold()
-                    .blue()
-                );
-
-                if yes_or_no_question() {
-                    // Send data to database and erase the request
-                    let return_db_client_creation = db_create_client(&db_info, host_info);
-                    let _ = return_db_client_creation.await;
-
-                    println!("{}", "Client added to database".bold().blue());
-                    waiting_requests_contents.remove(0);
-                } else {
-                    // Simply erasing the request
-                    waiting_requests_contents.remove(0);
-                    println!("{}", "Request dropped".bold().blue());
-                }
-            }
-            NodeHostRequest::Diss(host_info) => {
-                println!(
-                    "{}",
-                    format!(
-                        "\'{}\' at {} => New DISS ? ",
-                        host_info.hostname, host_info.ip
-                    )
-                    .bold()
-                    .blue()
-                );
-
-                if yes_or_no_question() {
-                    // Send data to database and erase the request
-
-                    println!("{}", "DISS added to database".bold().blue());
-                    waiting_requests_contents.remove(0);
-                } else {
-                    // Simply erasing the request
-                    waiting_requests_contents.remove(0);
-                }
-            }
-            NodeHostRequest::Reps(host_info) => {
-                println!(
-                    "{}",
-                    format!(
-                        "\'{}\' at {} => New REPS ? ",
-                        host_info.hostname, host_info.ip
-                    )
-                    .bold()
-                    .blue()
-                );
-
-                if yes_or_no_question() {
-                    // Send data to database and erase the request
-
-                    println!("{}", "REPS added to database".bold().blue());
-                    waiting_requests_contents.remove(0);
-                } else {
-                    // Simply erasing the request
-                    waiting_requests_contents.remove(0);
-                }
-            }
-        }
-    }
-}
-
-pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
-    let db_connection = Connection::establish_basic_auth(
-        format!(
-            "http://{}:{}",
-            &db_info.arangodb_server_address, &db_info.arangodb_server_port
-        )
-        .as_str(),
-        &db_info.login,
-        &db_info.password,
-    )
-    .await
-    .unwrap();
-
-    let db = db_connection.db(&db_info.db_name).await.unwrap();
-
-    /*
-        Things to check in the database :
-            - the collections must exist (nodes and edges) and with the proper names
-            - each client must be connected to one (and only one) DISS and one (and only one) an OS
-            - each DISS must be connected to one (and only one) REPS and a least one OS
-            - each REPS must be connected to a least one OS
-            - for each OS connected to a client, it has to be connected to at least one DISS and one REPS
-            - a DISS must be compatible with the OS of the client = triangle (edges) between client-DISS-OS
-            - a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
-            - for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates*
-            - each OS must be connected to exactly one "become_client", one "become_diss" and one "become_reps" script
-    */
-
-    /* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
-
-    Ok(())
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeClient {
