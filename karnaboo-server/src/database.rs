@@ -133,12 +133,11 @@ pub async fn answer_requests(
                     .blue()
                 );
 
-                if yes_or_no_question() {
+                if yes_or_no_question(true) {
                     // Send data to database and erase the request
-                    let return_db_client_creation = db_create_client(&db_info, host_info);
+                    let return_db_client_creation = db_create_update_client(&db_info, host_info);
                     let _ = return_db_client_creation.await;
 
-                    println!("{}", "Client added to database".bold().blue());
                     waiting_requests_contents.remove(0);
                 } else {
                     // Simply erasing the request
@@ -157,10 +156,11 @@ pub async fn answer_requests(
                     .blue()
                 );
 
-                if yes_or_no_question() {
+                if yes_or_no_question(true) {
                     // Send data to database and erase the request
+                    let return_db_diss_creation = db_create_update_diss(&db_info, host_info);
+                    let _ = return_db_diss_creation.await;
 
-                    println!("{}", "DISS added to database".bold().blue());
                     waiting_requests_contents.remove(0);
                 } else {
                     // Simply erasing the request
@@ -178,10 +178,11 @@ pub async fn answer_requests(
                     .blue()
                 );
 
-                if yes_or_no_question() {
+                if yes_or_no_question(true) {
                     // Send data to database and erase the request
+                    let return_db_reps_creation = db_create_update_reps(&db_info, host_info);
+                    let _ = return_db_reps_creation.await;
 
-                    println!("{}", "REPS added to database".bold().blue());
                     waiting_requests_contents.remove(0);
                 } else {
                     // Simply erasing the request
@@ -198,7 +199,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
     // 1. Check database and collections existence and create them if necessary
     println!("");
     println!("--- Checking database ---");
-    let _ = db_create_database(db_info).await;
+    let _ = db_create_update_database(db_info).await;
 
     println!("");
     println!("--- Checking collections ---");
@@ -209,7 +210,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
         "reps",
         "os",
         "scripts"] {
-        let _ = db_create_node_collection(db_info, node_collection_name).await;
+        let _ = db_create_update_node_collection(db_info, node_collection_name).await;
     }
 
     for edge_collection_name in [
@@ -220,7 +221,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
         "script_compatible_with",
         "uses_os",
     ] {
-        let _ = db_create_edge_collection(db_info, edge_collection_name).await;
+        let _ = db_create_update_edge_collection(db_info, edge_collection_name).await;
     }
 
     /*
@@ -251,6 +252,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
             [ ] a REPS must be compatible with the OS of its DISS = triangle (edges) between REPS-DISS-OS
             [ ] for each client, there must be a path client->DISS->REPS, otherwise, the client won't get updates*
             [ ] each OS must be connected to exactly one "become_client", one "become_diss" and one "become_reps" script
+            [ ] a host can only have one role at the time. It can not exist in multiple node collections (ArangoDB allows it)
     */
 
     /* If one of the items is wrong, prompt the administrator and ask to remediate the situation (propose a solution when possible) */
@@ -258,7 +260,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
     Ok(())
 }
 
-pub async fn db_create_database(db_info: &DatabaseInfo) -> Result<()> {
+pub async fn db_create_update_database(db_info: &DatabaseInfo) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -302,7 +304,7 @@ pub async fn db_create_database(db_info: &DatabaseInfo) -> Result<()> {
     Ok(())
 }
 
-pub async fn db_create_node_collection(
+pub async fn db_create_update_node_collection(
     db_info: &DatabaseInfo,
     collection_name: &str,
 ) -> Result<()> {
@@ -349,7 +351,7 @@ pub async fn db_create_node_collection(
     Ok(())
 }
 
-pub async fn db_create_edge_collection(
+pub async fn db_create_update_edge_collection(
     db_info: &DatabaseInfo,
     collection_name: &str,
 ) -> Result<()> {
@@ -396,7 +398,7 @@ pub async fn db_create_edge_collection(
     Ok(())
 }
 
-pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> Result<()> {
+pub async fn db_create_update_client(db_info: &DatabaseInfo, host_info: NodeClient) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -411,24 +413,30 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
+
     let client_creation_query = format!(
-        r#"insert {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "hostid": "{}" }} into clients"#,
+        r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN clients"#,
+            host_info._key,
             host_info.hostname,
             host_info.ip,
             host_info.osname,
             host_info.osversion,
-            host_info.hostid
+            host_info._key,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info._key
     );
 
-    let _result_command: Vec<serde_json::Value> =
+    let _: Vec<serde_json::Value> =
         match db.aql_str(client_creation_query.as_str()).await {
             Ok(content) => {
-                println!("Database return");
-                println!("{:?}", content);
+                println!("{}", "Client added/updated in database".bold().blue());
                 content
             }
             Err(e) => {
-                println!("{}", "Invalid AQL query".red());
+                println!("{}", "Problem encountered with AQL query".red());
                 println!("{:?}", e);
                 vec![json!([""])]
             }
@@ -436,7 +444,7 @@ pub async fn db_create_client(db_info: &DatabaseInfo, host_info: NodeClient) -> 
     Ok(())
 }
 
-pub async fn db_create_diss(db_info: &DatabaseInfo, host_info: NodeClient) -> Result<()> {
+pub async fn db_create_update_diss(db_info: &DatabaseInfo, host_info: NodeDiss) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -452,19 +460,28 @@ pub async fn db_create_diss(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
     let diss_creation_query = format!(
-        "insert {{\"hostname\": \"{}\", \"ip\": \"{}\" }} into diss",
-        host_info.hostname, host_info.ip
+        r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN diss"#,
+            host_info._key,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info._key,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info._key
     );
 
-    let _result_command: Vec<serde_json::Value> =
+    let _: Vec<serde_json::Value> =
         match db.aql_str(diss_creation_query.as_str()).await {
             Ok(content) => {
-                println!("Database return");
-                println!("{:?}", content);
+                println!("{}", "DISS added/updated in database".bold().blue());
                 content
             }
             Err(e) => {
-                println!("{}", "Invalid AQL query".red());
+                println!("{}", "Problem encountered with AQL query".red());
                 println!("{:?}", e);
                 vec![json!([""])]
             }
@@ -472,7 +489,7 @@ pub async fn db_create_diss(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     Ok(())
 }
 
-pub async fn db_create_reps(db_info: &DatabaseInfo, host_info: NodeClient) -> Result<()> {
+pub async fn db_create_update_reps(db_info: &DatabaseInfo, host_info: NodeReps) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -488,19 +505,28 @@ pub async fn db_create_reps(db_info: &DatabaseInfo, host_info: NodeClient) -> Re
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
     let reps_creation_query = format!(
-        "insert {{\"hostname\": \"{}\", \"ip\": \"{}\" }} into diss",
-        host_info.hostname, host_info.ip
+        r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN reps"#,
+            host_info._key,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info._key,
+            host_info.hostname,
+            host_info.ip,
+            host_info.osname,
+            host_info.osversion,
+            host_info._key
     );
 
-    let _result_command: Vec<serde_json::Value> =
+    let _: Vec<serde_json::Value> =
         match db.aql_str(reps_creation_query.as_str()).await {
             Ok(content) => {
-                println!("Database return");
-                println!("{:?}", content);
+                println!("{}", "REPS added/updated in database".bold().blue());
                 content
             }
             Err(e) => {
-                println!("{}", "Invalid AQL query".red());
+                println!("{}", "Problem encountered with AQL query".red());
                 println!("{:?}", e);
                 vec![json!([""])]
             }
@@ -518,7 +544,7 @@ pub struct NodeClient {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -527,7 +553,7 @@ pub struct NodeReps {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -536,7 +562,7 @@ pub struct NodeDiss {
     pub ip: String,
     pub osname: String,
     pub osversion: String,
-    pub hostid: String,
+    pub _key: String,
 }
 
 pub struct NodeOs {
