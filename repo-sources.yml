@@ -1,0 +1,57 @@
+# File format : YAML
+# https://yaml.org/
+
+# The _key value is necessary in the database.
+# It is a MD5 hash obtained with :
+#   echo "[osname] [osversion]" | md5sum
+# 
+#   echo "Debian GNU/Linux 12" | md5sum
+#     3ae9b9ff69a78d614864f1957778fecb
+
+list:
+  - os:
+    _key: "f927102807a513e0e1d0eea9e7505b57"
+    osname: "Linux Mint"
+    osversion: "20"
+    repositories:
+    - "deb http://packages.linuxmint.com ulyana main upstream import backport #id:linuxmint_main"
+    - "deb http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse"
+    - "deb http://archive.canonical.com/ubuntu/ focal partner"
+
+  - os:
+    _key: "67d2fc0cbcb12e24cc40639dc9de1888"
+    osname: "Linux Mint"
+    osversion: "20.1"
+    repositories:
+    - "deb http://packages.linuxmint.com ulyssa main upstream import backport #id:linuxmint_main"
+    - "deb http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse"
+    - "deb http://archive.canonical.com/ubuntu/ focal partner"
+
+  - os:
+    _key: "56bb506e24d8ff19bc4244b2f8d3543e"
+    osname: "Linux Mint"
+    osversion: "20.2"
+    repositories:
+    - "deb http://packages.linuxmint.com uma main upstream import backport #id:linuxmint_main"
+    - "deb http://archive.ubuntu.com/ubuntu focal main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-updates main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu focal-backports main restricted universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse"
+    - "deb http://archive.canonical.com/ubuntu/ focal partner"
+
+  - os:
+    _key: "093005508bb26f610f57a78826b84b3b"
+    osname: "Linux Mint"
+    osversion: "21"
+    repositories:
+    - "deb http://packages.linuxmint.com vanessa main upstream import backport #id:linuxmint_main"
+    - "deb http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse"
+    - "deb http://archive.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse"
+    - "deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse"
