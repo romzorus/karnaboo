@@ -6,9 +6,9 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 use arangors::Connection;
 use colored::Colorize;
+use config::{self, Config, File, FileFormat};
 use futures::lock::Mutex;
 use rustyline::error::ReadlineError;
 use rustyline::{DefaultEditor, Result};
@@ -121,6 +121,8 @@ pub async fn answer_requests(
                 .blue()
         );
 
+        let req_clone_for_os = req.clone();
+
         match req {
             NodeHostRequest::Client(host_info) => {
                 println!(
@@ -135,8 +137,13 @@ pub async fn answer_requests(
 
                 if yes_or_no_question(true) {
                     // Send data to database and erase the request
-                    let return_db_client_creation = db_create_update_client(&db_info, host_info);
+                    // Create/update the client
+                    let return_db_client_creation = db_create_update_client(&db_info, &host_info);
                     let _ = return_db_client_creation.await;
+                    // Create/update the OS
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let _ = return_os_client_creation.await;
+                    // Link the client to the OS
 
                     waiting_requests_contents.remove(0);
                 } else {
@@ -160,6 +167,10 @@ pub async fn answer_requests(
                     // Send data to database and erase the request
                     let return_db_diss_creation = db_create_update_diss(&db_info, host_info);
                     let _ = return_db_diss_creation.await;
+                    // Create/update the OS
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let _ = return_os_client_creation.await;
+                    // Link the client to the OS
 
                     waiting_requests_contents.remove(0);
                 } else {
@@ -182,6 +193,10 @@ pub async fn answer_requests(
                     // Send data to database and erase the request
                     let return_db_reps_creation = db_create_update_reps(&db_info, host_info);
                     let _ = return_db_reps_creation.await;
+                    // Create/update the OS
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let _ = return_os_client_creation.await;
+                    // Link the client to the OS
 
                     waiting_requests_contents.remove(0);
                 } else {
@@ -204,12 +219,7 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
     println!("");
     println!("--- Checking collections ---");
 
-    for node_collection_name in [
-        "clients",
-        "diss",
-        "reps",
-        "os",
-        "scripts"] {
+    for node_collection_name in ["clients", "diss", "reps", "os", "scripts"] {
         let _ = db_create_update_node_collection(db_info, node_collection_name).await;
     }
 
@@ -398,7 +408,7 @@ pub async fn db_create_update_edge_collection(
     Ok(())
 }
 
-pub async fn db_create_update_client(db_info: &DatabaseInfo, host_info: NodeClient) -> Result<()> {
+pub async fn db_create_update_client(db_info: &DatabaseInfo, host_info: &NodeClient) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -413,34 +423,32 @@ pub async fn db_create_update_client(db_info: &DatabaseInfo, host_info: NodeClie
 
     let db = db_connection.db(&db_info.db_name).await.unwrap();
 
-
     let client_creation_query = format!(
         r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN clients"#,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key
     );
 
-    let _: Vec<serde_json::Value> =
-        match db.aql_str(client_creation_query.as_str()).await {
-            Ok(content) => {
-                println!("{}", "Client added/updated in database".bold().blue());
-                content
-            }
-            Err(e) => {
-                println!("{}", "Problem encountered with AQL query".red());
-                println!("{:?}", e);
-                vec![json!([""])]
-            }
-        };
+    let _: Vec<serde_json::Value> = match db.aql_str(client_creation_query.as_str()).await {
+        Ok(content) => {
+            println!("{}", "Client added/updated in database".bold().blue());
+            content
+        }
+        Err(e) => {
+            println!("{}", "Problem encountered with AQL query".red());
+            println!("{:?}", e);
+            vec![json!([""])]
+        }
+    };
     Ok(())
 }
 
@@ -461,31 +469,30 @@ pub async fn db_create_update_diss(db_info: &DatabaseInfo, host_info: NodeDiss) 
 
     let diss_creation_query = format!(
         r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN diss"#,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key
     );
 
-    let _: Vec<serde_json::Value> =
-        match db.aql_str(diss_creation_query.as_str()).await {
-            Ok(content) => {
-                println!("{}", "DISS added/updated in database".bold().blue());
-                content
-            }
-            Err(e) => {
-                println!("{}", "Problem encountered with AQL query".red());
-                println!("{:?}", e);
-                vec![json!([""])]
-            }
-        };
+    let _: Vec<serde_json::Value> = match db.aql_str(diss_creation_query.as_str()).await {
+        Ok(content) => {
+            println!("{}", "DISS added/updated in database".bold().blue());
+            content
+        }
+        Err(e) => {
+            println!("{}", "Problem encountered with AQL query".red());
+            println!("{:?}", e);
+            vec![json!([""])]
+        }
+    };
     Ok(())
 }
 
@@ -506,31 +513,208 @@ pub async fn db_create_update_reps(db_info: &DatabaseInfo, host_info: NodeReps) 
 
     let reps_creation_query = format!(
         r#"UPSERT {{ "_key": "{}" }} INSERT {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} REPLACE {{"hostname": "{}", "ip": "{}", "osname": "{}", "osversion": "{}", "_key": "{}" }} IN reps"#,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key,
-            host_info.hostname,
-            host_info.ip,
-            host_info.osname,
-            host_info.osversion,
-            host_info._key
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key,
+        host_info.hostname,
+        host_info.ip,
+        host_info.osname,
+        host_info.osversion,
+        host_info._key
     );
 
-    let _: Vec<serde_json::Value> =
-        match db.aql_str(reps_creation_query.as_str()).await {
-            Ok(content) => {
-                println!("{}", "REPS added/updated in database".bold().blue());
-                content
+    let _: Vec<serde_json::Value> = match db.aql_str(reps_creation_query.as_str()).await {
+        Ok(content) => {
+            println!("{}", "REPS added/updated in database".bold().blue());
+            content
+        }
+        Err(e) => {
+            println!("{}", "Problem encountered with AQL query".red());
+            println!("{:?}", e);
+            vec![json!([""])]
+        }
+    };
+    Ok(())
+}
+
+pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) -> Result<()> {
+    // Parsing repositories ressource file
+    let config_builder = Config::builder()
+        .add_source(File::new("../repo-sources.yml", FileFormat::Yaml))
+        .build()
+        .unwrap();
+    let repo_source = config_builder.try_deserialize::<RepoSource>().unwrap();
+
+    // Check that the client's OS is supported by the repositories ressource file
+    // If the OS is supported, grab a copy of its info -> useful for the next step
+    let mut host_os = Os {
+        _key: "".to_string(),
+        osname: "".to_string(),
+        osversion: "".to_string(),
+        repositories: vec!["".to_string()],
+    };
+
+    let mut host_is_supported = false;
+    // The following match needs to be rewritten in the future to avoid code repetition.
+    // --> Make use of generic types ?
+    match req {
+        NodeHostRequest::Client(host_info) => {
+            for supported_os in repo_source.list.into_iter() {
+                if (host_info.osname == supported_os.osname)
+                    && (host_info.osversion == supported_os.osversion)
+                {
+                    host_is_supported = true;
+                    host_os = supported_os;
+                }
             }
-            Err(e) => {
-                println!("{}", "Problem encountered with AQL query".red());
-                println!("{:?}", e);
-                vec![json!([""])]
+            if !host_is_supported {
+                // OS not supported by the tool
+                println!(
+                    "{}",
+                    format!(
+                        "{} {} is not supported by the tool",
+                        host_info.osname, host_info.osversion
+                    )
+                    .red()
+                );
+                return (Err(ReadlineError::Interrupted));
             }
-        };
+        }
+        NodeHostRequest::Diss(host_info) => {
+            for supported_os in repo_source.list.into_iter() {
+                if (host_info.osname == supported_os.osname)
+                    && (host_info.osversion == supported_os.osversion)
+                {
+                    host_is_supported = true;
+                    host_os = supported_os;
+                }
+            }
+            if !host_is_supported {
+                // OS not supported by the tool
+                println!(
+                    "{}",
+                    format!(
+                        "{} {} is not supported by the tool",
+                        host_info.osname, host_info.osversion
+                    )
+                    .red()
+                );
+                return (Err(ReadlineError::Interrupted));
+            }
+        }
+        NodeHostRequest::Reps(host_info) => {
+            for supported_os in repo_source.list.into_iter() {
+                if (host_info.osname == supported_os.osname)
+                    && (host_info.osversion == supported_os.osversion)
+                {
+                    host_is_supported = true;
+                    host_os = supported_os;
+                }
+            }
+            if !host_is_supported {
+                // OS not supported by the tool
+                println!(
+                    "{}",
+                    format!(
+                        "{} {} is not supported by the tool",
+                        host_info.osname, host_info.osversion
+                    )
+                    .red()
+                );
+                return (Err(ReadlineError::Interrupted));
+            }
+        }
+    }
+
+    // Create/update the OS in the database
+    // The repo list has to look like an array ["REPO 1", "REPO 2"] so a little formatting
+    // is needed before sending the AQL query.
+    let mut repo_list = String::new();
+    for repo in host_os.repositories.into_iter() {
+        repo_list.push_str(format!("\"{}\", ", repo).as_str());
+    }
+
+    let os_creation_query = format!(
+        r#"UPSERT {{ "_key": "{}" }} INSERT {{ "_key": "{}", "osname": "{}", "osversion": "{}", "repositories": [{}] }} UPDATE {{ "repositories": [{}] }} IN os"#,
+        host_os._key, host_os._key, host_os.osname, host_os.osversion, repo_list, repo_list
+    );
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
+    let _: Vec<serde_json::Value> = match db.aql_str(&os_creation_query.as_str()).await {
+        Ok(content) => {
+            println!("{}", "OS added/updated in database".bold().blue());
+            content
+        }
+        Err(e) => {
+            println!("{}", "Problem encountered with AQL query".red());
+            println!("{:?}", e);
+            vec![json!([""])]
+        }
+    };
+
+    // Create/update the link between client and OS
+    //  -> client => uses_os => os
+    //  -> DISS => diss_compatible_with => os
+    //  -> REPS => reps_compatible_with => os
+    // OS : host_os._key
+    // Host : host_info._key
+
+    let mut edge_creation_query = String::new();
+
+    match req {
+        NodeHostRequest::Client(host_info) => {
+            edge_creation_query = format!(
+                r#"UPSERT {{ "_from": "clients/{}", "_to": "os/{}" }} INSERT {{ "_from": "clients/{}", "_to": "os/{}" }} UPDATE {{ }} IN uses_os"#,
+                host_info._key, host_os._key, host_info._key, host_os._key,
+            );
+        }
+        NodeHostRequest::Diss(host_info) => {
+            edge_creation_query = format!(
+                r#"UPSERT {{ "_from": "diss/{}", "_to": "os/{}" }} INSERT {{ "_from": "diss/{}", "_to": "os/{}" }} UPDATE {{ }} IN diss_compatible_with"#,
+                host_info._key, host_os._key, host_info._key, host_os._key,
+            );
+        }
+        NodeHostRequest::Reps(host_info) => {
+            edge_creation_query = format!(
+                r#"UPSERT {{ "_from": "reps/{}", "_to": "os/{}" }} INSERT {{ "_from": "reps/{}", "_to": "os/{}" }} UPDATE {{ }} IN reps_compatible_with"#,
+                host_info._key, host_os._key, host_info._key, host_os._key,
+            );
+        }
+    }
+
+    let _: Vec<serde_json::Value> = match db.aql_str(&edge_creation_query.as_str()).await {
+        Ok(content) => {
+            println!(
+                "{}",
+                "Edge between host and os added/updated in database"
+                    .bold()
+                    .blue()
+            );
+            content
+        }
+        Err(e) => {
+            println!("{}", "Problem encountered with AQL query".red());
+            println!("{:?}", e);
+            vec![json!([""])]
+        }
+    };
+
     Ok(())
 }
 
@@ -598,14 +782,18 @@ pub enum NodeHostRequest {
     Reps(NodeReps),
 }
 
-// pub async fn thread_database_interact() {
-// !!! Retirer le mot de passe codé en dur du code source via une lecture de fichier de conf externe
-// let db_connection =
-//     Connection::establish_basic_auth("http://127.0.0.1:8529", "root", "arangodb")
-//         .await
-//         .unwrap();
+#[derive(Deserialize)]
+struct RepoSource {
+    list: Vec<Os>,
+}
 
-// let db = db_connection.db("_system").await.unwrap();
+#[derive(Deserialize)]
+struct Os {
+    _key: String,
+    osname: String,
+    osversion: String,
+    repositories: Vec<String>,
+}
 
 // let collection_clients = db.collection("clients").await.unwrap();
 // let collection_reps = db.collection("reps").await.unwrap();
