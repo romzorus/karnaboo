@@ -47,11 +47,12 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 
 ### What is working so far
 
-- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
-- agent is able to send a request with its real informations through the network
-- server can receive and buffer multiple requests and let the administrator (user) decide to agree or drop each one
-- server can actually fill the database with real client's informations
 - server can create a database and the required collections from scratch
+- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
+- agent can send a request with its real informations through the network
+- server can receive and buffer multiple requests and let the administrator (user) decide to agree or drop each one
+- server can actually fill the database with real client's informations and create appropriate edges and nodes
+
 
 ## TO-DO list
 (not in order of priority)
@@ -60,12 +61,13 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] add autocompletion
 - [X] function to create own database from scratch in a working ArangoDB instance
 - [ ] function to check database consistency
-- [ ] fill "os" nodes with the actual repositories -> hardcoded list ? files available online through gitlab ?
+- [X] fill "os" nodes with the actual repositories -> hardcoded list ? files available online through gitlab ?
 - [ ] handling configuration file : present at the root directory of the program or path specified as a command line argument
 - [ ] improve error handling and stability by getting rid of all "unwrap" and "expect" methods
 - [ ] add an Arc<Mutex<T>> to make sure the database is accessed in a regulated way
 - [ ] have a single connexion to the database and pass its reference to the functions (instead of having each function create its own connexion each time)
 - [ ] add a functionality to ensure a host is only in one collection (ArangoDB allows documents to have the same _key if they are in different collections, meaning a host can appear as a client and as a DISS at the same time)
+- [ ] scripts to implement role on supported OSs
 
 *** Agent side ***
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
