@@ -55,3 +55,12 @@ list:
     - "deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse"
     - "deb http://archive.ubuntu.com/ubuntu jammy-backports main restricted universe multiverse"
     - "deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse"
+
+  - os:
+    _key: "3ae9b9ff69a78d614864f1957778fecb"
+    osname: "Debian GNU/Linux"
+    osversion: "12"
+    repositories:
+    - "deb http://deb.debian.org/debian/ bookworm main non-free-firmware"
+    - "deb http://security.debian.org/debian-security bookworm-security main non-free-firmware"
+    - "deb http://deb.debian.org/debian/ bookworm-updates main non-free-firmware"
