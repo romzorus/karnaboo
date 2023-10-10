@@ -18,6 +18,7 @@ use std::sync::Arc;
 
 use crate::commands::yes_or_no_question;
 use crate::configuration::DatabaseInfo;
+use crate::enforce::{self, get_script_from_source_file};
 
 // Let the user directly interact with the database via AQL queries ("AQL mode").
 // With AQL queries, the user is limited and cannot create or delete database or collections.
@@ -208,16 +209,13 @@ pub async fn answer_requests(
     }
 }
 
-pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
-    println!("Database consistency checking...");
-
-    // 1. Check database and collections existence and create them if necessary
+pub async fn db_build(db_info: &DatabaseInfo) -> Result<()> {
     println!("");
-    println!("--- Checking database ---");
+    println!("--- Creating database ---");
     let _ = db_create_update_database(db_info).await;
 
     println!("");
-    println!("--- Checking collections ---");
+    println!("--- Creating collections ---");
 
     for node_collection_name in ["clients", "diss", "reps", "os", "scripts"] {
         let _ = db_create_update_node_collection(db_info, node_collection_name).await;
@@ -234,7 +232,16 @@ pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
         let _ = db_create_update_edge_collection(db_info, edge_collection_name).await;
     }
 
-    /*
+    Ok(())
+}
+
+pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
+
+    println!("Database and collections checking...");
+
+    // 1. Check database and collections existence and create them if necessary
+    let _ = db_build(db_info).await;
+        /*
         Required collections :
             Nodes :
             - clients
@@ -624,7 +631,7 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
                     )
                     .red()
                 );
-                return (Err(ReadlineError::Interrupted));
+                return Err(ReadlineError::Interrupted);
             }
         }
     }
@@ -668,10 +675,11 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
         }
     };
 
+    // Creation of scripts associated to the os
+
+    let _ = db_create_update_script(db_info, host_os._key.clone()).await;
+
     // Create/update the link between client and OS
-    //  -> client => uses_os => os
-    //  -> DISS => diss_compatible_with => os
-    //  -> REPS => reps_compatible_with => os
     // OS : host_os._key
     // Host : host_info._key
 
@@ -686,13 +694,13 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
         }
         NodeHostRequest::Diss(host_info) => {
             edge_creation_query = format!(
-                r#"UPSERT {{ "_from": "diss/{}", "_to": "os/{}" }} INSERT {{ "_from": "diss/{}", "_to": "os/{}" }} UPDATE {{ }} IN diss_compatible_with"#,
+                r#"UPSERT {{ "_from": "diss/{}", "_to": "os/{}" }} INSERT {{ "_from": "diss/{}", "_to": "os/{}" }} UPDATE {{ }} IN uses_os"#,
                 host_info._key, host_os._key, host_info._key, host_os._key,
             );
         }
         NodeHostRequest::Reps(host_info) => {
             edge_creation_query = format!(
-                r#"UPSERT {{ "_from": "reps/{}", "_to": "os/{}" }} INSERT {{ "_from": "reps/{}", "_to": "os/{}" }} UPDATE {{ }} IN reps_compatible_with"#,
+                r#"UPSERT {{ "_from": "reps/{}", "_to": "os/{}" }} INSERT {{ "_from": "reps/{}", "_to": "os/{}" }} UPDATE {{ }} IN uses_os"#,
                 host_info._key, host_os._key, host_info._key, host_os._key,
             );
         }
@@ -717,6 +725,98 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
 
     Ok(())
 }
+
+pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Result<()> {
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
+    // Creation of script documents and associated edges (script --> os) in database
+    for role in ["client", "diss", "reps"] {
+        match get_script_from_source_file(role, os.as_str()) {
+            Ok(script) => {
+                // The os compatible list has to look like an array ["hash 1", "hash 2"] so a little formatting
+                // is needed before sending the AQL query.
+                
+                let mut hash_os_list = String::new();
+                for os_tmp in script.compatible_with.clone().into_iter() {
+                    hash_os_list.push_str(format!("\"{}\", ", os_tmp).as_str());
+                }
+
+                // Increment database
+                let script_creation_query = format!(
+                    r#"UPSERT {{ "_key": "{}" }} INSERT {{ "_key": "{}", "role": "{}", "content": "{}", "compatible_with": [{}] }} UPDATE {{ "content": "{}", "compatible_with": [{}] }} IN scripts"#,
+                    script._key,
+                    script._key,
+                    script.role,
+                    script.content,
+                    hash_os_list,
+                    script.content,
+                    hash_os_list
+                );
+                        
+                let _: Vec<serde_json::Value> = match db.aql_str(&script_creation_query.as_str()).await {
+                    Ok(content) => {
+                        println!("{}", format!("Script (role {}) added/updated in database", role).bold().blue());
+                        content
+                    }
+                    Err(e) => {
+                        println!("{}", "Problem encountered with AQL query".red());
+                        println!("{:?}", e);
+                        vec![json!([""])]
+                    }
+                };
+
+                // Creation of edges between the os and its associated scripts
+                // Also, since a script can be associated to multiple os,
+                // the script is going to be linked to every compatible os
+                // already existing in the database
+                for compatible_os in script.compatible_with.into_iter() {
+                    let edge_creation_query = format!(
+                        r#"UPSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} INSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} UPDATE {{ }} IN script_compatible_with"#,
+                        script._key,
+                        compatible_os,
+                        script._key,
+                        compatible_os
+                    );
+                            
+                    let _: Vec<serde_json::Value> = match db.aql_str(&edge_creation_query.as_str()).await {
+                        Ok(content) => {
+                            println!("{}", format!("Script (role {}) linked to os", role).bold().blue());
+                            content
+                        }
+                        Err(e) => {
+                            println!("{}", "Problem encountered with AQL query".red());
+                            println!("{:?}", e);
+                            vec![json!([""])]
+                        }
+                    };
+                }
+
+                
+
+
+            }
+            Err(e) => {
+                println!("Role {} : {}", role, e);
+            }
+        }
+    }
+
+    Ok(())
+}
+
 
 /* ============================================================================
 ========================== Types declarations =================================
