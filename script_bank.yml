@@ -1,0 +1,45 @@
+# File format : YAML
+# https://yaml.org/
+
+# The _key value is necessary in the database.
+# It is a MD5 hash obtained with :
+#   echo "$(date)" | md5sum
+# Since there is nothing definitive in a script, the hash
+# is based on the date and time of the creation.
+# 
+#   echo "$(date)" | md5sum
+#     5f221571aecfcdd203d30957cf9896a0
+
+list:
+  - script:
+    _key: "8b4bc5d63eb95e3eaab346a7b2e350b3"
+    role: "client"
+    compatible_with:
+      - "093005508bb26f610f57a78826b84b3b"
+      - "56bb506e24d8ff19bc4244b2f8d3543e"
+      - "3ae9b9ff69a78d614864f1957778fecb"
+    content: |
+      echo \\\"let\'s turn this host into a CLIENT !\\\"
+      ls -a .
+      
+  - script:
+    _key: "7673042d8bc11b92d32bc6240b32b082"
+    role: "diss"
+    compatible_with:
+      - "093005508bb26f610f57a78826b84b3b"
+      - "56bb506e24d8ff19bc4244b2f8d3543e"
+      - "3ae9b9ff69a78d614864f1957778fecb"
+    content: |
+      echo \\\"let\'s turn this host into a CLIENT !\\\"
+      ls -a .
+
+  - script:
+    _key: "f0954833a9859b481b1053a0a44914e8"
+    role: "reps"
+    compatible_with:
+      - "093005508bb26f610f57a78826b84b3b"
+      - "56bb506e24d8ff19bc4244b2f8d3543e"
+      - "3ae9b9ff69a78d614864f1957778fecb"
+    content: |
+      echo \\\"let\'s turn this host into a CLIENT !\\\"
+      ls -a .
