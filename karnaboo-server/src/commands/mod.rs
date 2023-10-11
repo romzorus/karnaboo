@@ -15,10 +15,7 @@ pub fn help() {
     println!("");
     println!("Command °° Description °° Alternative or Exemple");
     println!("--------||-------------||------------------------");
-    println!(
-        "{}    °° Show this help message °° h | ?",
-        "help".bold()
-    );
+    println!("{}    °° Show this help message °° h | ?", "help".bold());
     println!(
         "{}    °° Terminates silvadmin process °° ex | quit | q",
         "exit".bold()
@@ -32,7 +29,11 @@ pub fn help() {
         "aqlmode".bold()
     );
     println!(
-        "{}    °° Check consistency and coherence of your database °° dbc",
+        "{}    °° Build your database from scratch°° dbb",
+        "dbbuild".bold()
+    );
+    println!(
+        "{}    °° Check the consistency of your database°° dbc",
         "dbcheck".bold()
     );
     println!(
@@ -68,12 +69,16 @@ pub fn show_goodbye_message() {
     println!(r" ████████████████████████████████████████████████████████████████████");
 }
 
-pub fn yes_or_no_question() -> bool {
+pub fn yes_or_no_question(default: bool) -> bool {
+    // Default value : yes = true and no = false
     let answer: bool;
     let mut user_input = String::with_capacity(3);
 
     loop {
-        print!("Yes or No ? (default: yes) ");
+        print!(
+            "Yes or No ? (default: {}) ",
+            if default { "yes" } else { "no" }
+        );
         let _ = stdout().flush();
 
         user_input.clear();
@@ -83,7 +88,7 @@ pub fn yes_or_no_question() -> bool {
         let user_input = user_input.trim();
 
         if user_input.is_empty() {
-            answer = true;
+            answer = default;
             break;
         } else if ["Yes", "yes", "Y", "y"].contains(&user_input) {
             answer = true;

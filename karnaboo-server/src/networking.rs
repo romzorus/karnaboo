@@ -7,7 +7,7 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 use crate::configuration::Networking;
-use crate::database::{self, NodeHostRequest, NodeClient, NodeDiss, NodeReps};
+use crate::database::{self, NodeClient, NodeDiss, NodeHostRequest, NodeReps};
 use arangors::uclient::reqwest::ReqwestClient;
 use arangors::Database;
 use colored::Colorize;
@@ -80,7 +80,8 @@ pub async fn thread_networking(
                             "{}",
                             format!(
                                 "New request for client role from \'{}\' at {}",
-                                content.hostname, stream.local_addr().unwrap().ip()
+                                content.hostname,
+                                stream.local_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -91,14 +92,16 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            _key: content._key.clone() });
+                            _key: content._key.clone(),
+                        });
                     }
                     NodeHostRequest::Diss(content) => {
                         println!(
                             "{}",
                             format!(
                                 "New request for DISS role from \'{}\' at {}",
-                                content.hostname, stream.local_addr().unwrap().ip()
+                                content.hostname,
+                                stream.local_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -109,14 +112,16 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            _key: content._key.clone() });
+                            _key: content._key.clone(),
+                        });
                     }
                     NodeHostRequest::Reps(content) => {
                         println!(
                             "{}",
                             format!(
                                 "New request for REPS role from \'{}\' at {}",
-                                content.hostname, stream.local_addr().unwrap().ip()
+                                content.hostname,
+                                stream.local_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -127,10 +132,11 @@ pub async fn thread_networking(
                             ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
-                            _key: content._key.clone() });
+                            _key: content._key.clone(),
+                        });
                     }
                 }
-                
+
                 // Add this request to the waiting requests buffer
                 let mut waiting_requests = waiting_requests_buffer_networking.lock().await;
                 waiting_requests.push(final_request_content);

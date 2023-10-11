@@ -10,14 +10,12 @@ use config::{self, Config, File, FileFormat};
 use futures::lock::Mutex;
 use std::sync::Arc;
 
-use arangors::Connection;
-use colored::Colorize;
-
 mod cli;
 mod commands;
 mod configuration;
 mod database;
 mod networking;
+mod enforce;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
@@ -25,10 +23,7 @@ fn main() {
 
     // Parsing configuration file
     let config_builder = Config::builder()
-        .add_source(File::new(
-            "../../config",
-            FileFormat::Ini,
-        ))
+        .add_source(File::new("../../config", FileFormat::Ini))
         .build()
         .unwrap();
     let user_config = config_builder
