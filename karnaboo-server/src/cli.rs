@@ -11,13 +11,11 @@ This module relates to the shell, its prompt, its notifications/messages and
 its command interpreter. It checks the validity of a command then invokes the
 corresponding function from the commands module.
 */
-use crate::{commands, networking};
+use crate::commands;
 use crate::{configuration::DatabaseInfo, database};
+use crate::enforce;
+
 use arangors;
-
-use arangors::uclient::reqwest::ReqwestClient;
-use arangors::Database;
-
 use colored::Colorize;
 use futures::lock::Mutex;
 use rustyline::error::ReadlineError;
@@ -87,10 +85,13 @@ pub async fn thread_cli(
         } else if ["dbcheck", "dbc"].contains(&user_command_str) {
             let return_db_check = database::db_check(&db_info);
             let _ = return_db_check.await;
-        }else if ["answer request", "ansreq", "ar"].contains(&user_command_str) {
+        } else if ["answer request", "ansreq", "ar"].contains(&user_command_str) {
             let return_answer_request =
                 database::answer_requests(&waiting_requests_buffer_cli, &db_info);
             let _ = return_answer_request.await;
+        } else if ["enforce", "enf"].contains(&user_command_str) {
+            let return_enforce = enforce::enforce(&db_info);
+            let _ = return_enforce.await;
         } else {
             println!("{} : {}", "Invalid command".bold().red(), user_command_str);
         }

@@ -40,6 +40,10 @@ pub fn help() {
         "{}    °° Answer hosts requests to be handled °° ansreq | ar",
         "answer request".bold()
     );
+    println!(
+        "{}    °° Enforce what you decided in the database to all your hosts °° enf",
+        "enforce".bold()
+    );
     println!("");
 }
 
