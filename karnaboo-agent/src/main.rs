@@ -1,9 +1,9 @@
 use std::env;
 use std::net::SocketAddr;
-use std::process::exit;
+use std::process::{exit, Output};
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::process::Command;
 
 
@@ -95,10 +95,11 @@ fn main() {
     networking::send_request(content, server_socket);
 
     // *********** 5. wait for reception confirmation
-    // TBD
+    // TBD eventually : for the time being, we assume every request is granted
+
     // *********** 6. wait for decision and technical informations
     let listener = TcpListener::bind("127.0.0.1:9016").expect("Unable to open socket 127.0.0.1:9016");
-    let (mut srv_stream, srv_socket) = listener.accept().expect("Unable to establish connexion");
+    let (mut srv_stream, _srv_socket) = listener.accept().expect("Unable to establish connexion");
 
     let mut buffer: [u8; 2048] = [0; 2048];
     let size = srv_stream
@@ -118,14 +119,40 @@ fn main() {
         .output()
         .expect("Wrong command");
 
-    // let script_result = String::from_utf8_lossy(&script_raw_output.stdout[..]);
-    // println!("{}", script_result);
-
+    
     // *********** 8. send the result back to the server
+
+    // std::process::Output type doesn't natively support serialization.
+    // [Until I find a better solution], another type ExecutionResult is defined
+    // and used to serialize and send the result
+    let execution_result = ExecutionResult {
+        exit_status: script_output.status.to_string(),
+        stdout: String::from_utf8_lossy(&script_output.stdout[..]).to_string(),
+        stderr: String::from_utf8_lossy(&script_output.stderr[..]).to_string()
+    };
+
+    // Serialization before sending to socket
+    let serialized_script_output = serde_json::to_string(&execution_result).unwrap();
+
+    // Open a socket
+    let mut socket_srv =
+        TcpStream::connect(server_socket).expect("Unable to connect to Karnaboo server");
+
+    // Send to server the serialized request
+    socket_srv
+        .write(&serialized_script_output.as_bytes())
+        .expect("Unable to send data through socket");
 
 }
 
 #[derive(Deserialize)]
 struct FinalInstructions {
     script_content: String
+}
+
+#[derive(Serialize)]
+struct ExecutionResult {
+    exit_status: String,
+    stdout: String,
+    stderr: String
 }
