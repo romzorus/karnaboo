@@ -1,6 +1,11 @@
 use std::env;
 use std::net::SocketAddr;
 use std::process::exit;
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use serde::Deserialize;
+use std::process::Command;
+
 
 mod commandline;
 mod localsystem;
@@ -9,16 +14,18 @@ mod networking;
 use crate::localsystem::LocalSystemConfig;
 use crate::networking::{NodeHostRequest, NodeClient, NodeDiss, NodeReps};
 
+/* Global workflow :
+    1. parse the request
+    2. get local system information
+    3. verify request consistency regarding system information
+    4. send request
+    5. wait for reception confirmation
+    6. wait for decision and technical informations
+    7. implement the decision with technical informations
+*/
+
 fn main() {
-    /* Global workflow :
-        1. parse the request
-        2. get local system information
-        3. verify request consistency regarding system information
-        4. send request
-        5. wait for reception confirmation
-        6. wait for decision and technical informations
-        7. implement the decision with technical informations
-    */
+
     // *********** 1. parse the request
     let args: Vec<String> = env::args().collect();
     let mut role = String::with_capacity(6); // "client | diss | reps"
@@ -45,16 +52,16 @@ fn main() {
     println!("  - OS name : {}", local_conf.osname);
     println!("  - OS version : {}", local_conf.osversion);
     println!("  - Hostname : {}", local_conf.hostname);
-    println!("  - HostID : {}", local_conf.hostid);
+    println!("  - Key : {}", local_conf._key);
 
     // *********** 3. verify request consistency with the local system
-    println!("Checking your system compatibility...");
+    println!("**** Checking your system compatibility... ****");
     let request_consistency = localsystem::check_request_feasability(&role, &local_conf);
     if !request_consistency {
         println!("The requirements are not met for your request.");
         exit(1);
     }
-    println!("Your request is compatible with your system.");
+    println!("Your system is compatible with your request.");
 
     // *********** 4. send request
     // Building content
@@ -65,7 +72,7 @@ fn main() {
             ip: String::from("0.0.0.0"),
             osname: local_conf.osname,
             osversion: local_conf.osversion,
-            hostid: local_conf.hostid
+            _key: local_conf._key
         });
     } else if role == "diss" {
         content = NodeHostRequest::Diss(NodeDiss {
@@ -73,7 +80,7 @@ fn main() {
             ip: String::from("0.0.0.0"),
             osname: local_conf.osname,
             osversion: local_conf.osversion,
-            hostid: local_conf.hostid
+            _key: local_conf._key
         });
     } else {
         content = NodeHostRequest::Reps(NodeReps {
@@ -81,13 +88,44 @@ fn main() {
             ip: String::from("0.0.0.0"),
             osname: local_conf.osname,
             osversion: local_conf.osversion,
-            hostid: local_conf.hostid
+            _key: local_conf._key
         });
     }
 
     networking::send_request(content, server_socket);
 
     // *********** 5. wait for reception confirmation
+    // TBD
     // *********** 6. wait for decision and technical informations
-    // *********** 7. implement the decision with technical informations
+    let listener = TcpListener::bind("127.0.0.1:9016").expect("Unable to open socket 127.0.0.1:9016");
+    let (mut srv_stream, srv_socket) = listener.accept().expect("Unable to establish connexion");
+
+    let mut buffer: [u8; 2048] = [0; 2048];
+    let size = srv_stream
+        .read(&mut buffer)
+        .expect("Unable to read from TcpStream");
+    let serialized_content = String::from_utf8_lossy(&buffer[..size]);
+    let final_instructions: FinalInstructions =
+        serde_json::from_str(&serialized_content)
+            .expect("Unable to deserialize data received from TcpStream");
+
+
+    // *********** 7. implement the decision with received technical informations
+    println!("**** Execute the final instructions ****");
+    let script_output = Command::new("sh")
+        .arg("-c")
+        .arg(final_instructions.script_content)
+        .output()
+        .expect("Wrong command");
+
+    // let script_result = String::from_utf8_lossy(&script_raw_output.stdout[..]);
+    // println!("{}", script_result);
+
+    // *********** 8. send the result back to the server
+
+}
+
+#[derive(Deserialize)]
+struct FinalInstructions {
+    script_content: String
 }

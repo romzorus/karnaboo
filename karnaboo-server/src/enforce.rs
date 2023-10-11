@@ -1,5 +1,9 @@
+use std::net::SocketAddr;
+use std::io::Write;
+use std::net::TcpStream;
+
 use config::{self, Config, File, FileFormat};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 
 
@@ -24,6 +28,19 @@ pub fn get_script_from_source_file(role: &str, os: &str) -> Result<Script, Strin
     Err(String::from("No compatible script found !"))
 }
 
+pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalInstructions) {
+
+     // Serialization before sending to socket
+    let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
+
+    let mut stream_client =
+    TcpStream::connect(host_socket).expect("Unable to connect to host\'s agent");
+
+    stream_client
+        .write(&serialized_instructions.as_bytes())
+        .expect("Unable to send data to the host");
+}
+
 #[derive(Deserialize, Debug)]
 pub struct ScriptBank {
     pub list: Vec<Script>,
@@ -37,3 +54,7 @@ pub struct Script {
     pub compatible_with: Vec<String>,
 }
 
+#[derive(Serialize)]
+pub struct FinalInstructions {
+    pub script_content: String
+}
