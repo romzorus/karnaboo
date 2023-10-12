@@ -14,6 +14,7 @@ corresponding function from the commands module.
 use crate::commands;
 use crate::{configuration::DatabaseInfo, database};
 use crate::enforce;
+use crate::configuration::Networking;
 
 use arangors;
 use colored::Colorize;
@@ -27,6 +28,7 @@ use std::time::Duration;
 pub async fn thread_cli(
     db_info: DatabaseInfo,
     waiting_requests_buffer_cli: Arc<Mutex<Vec<database::NodeHostRequest>>>,
+    networking_info: Networking
 ) -> Result<()> {
     std::thread::sleep(Duration::from_secs(1));
 
@@ -90,7 +92,7 @@ pub async fn thread_cli(
                 database::answer_requests(&waiting_requests_buffer_cli, &db_info);
             let _ = return_answer_request.await;
         } else if ["enforce", "enf"].contains(&user_command_str) {
-            let return_enforce = enforce::enforce(&db_info);
+            let return_enforce = enforce::enforce(&db_info, &networking_info);
             let _ = return_enforce.await;
         } else {
             println!("{} : {}", "Invalid command".bold().red(), user_command_str);

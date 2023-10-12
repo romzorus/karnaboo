@@ -38,11 +38,12 @@ fn main() {
     let waiting_requests_buffer_networking = waiting_requests_buffer.clone();
 
     // Networking
-    let networking_info = user_config.networking.clone();
+    let networking_info_for_net_thread = user_config.networking.clone();
+    let networking_info_for_cli_thread = user_config.networking.clone();
     // let networking_thread_handler =
     //     thread::spawn(move || networking::thread_networking(networking_info, waiting_requests_buffer_networking));
     let networking_thread_handler = rt.spawn(networking::thread_networking(
-        networking_info,
+        networking_info_for_net_thread,
         waiting_requests_buffer_networking,
     ));
 
@@ -50,6 +51,7 @@ fn main() {
     let cli_thread_handler = rt.spawn(cli::thread_cli(
         user_config.databaseinfo,
         waiting_requests_buffer_cli,
+        networking_info_for_cli_thread
     ));
 
     // Database (thread not useful at the moment)
