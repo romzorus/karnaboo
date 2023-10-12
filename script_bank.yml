@@ -19,8 +19,8 @@ list:
       - "56bb506e24d8ff19bc4244b2f8d3543e"
       - "3ae9b9ff69a78d614864f1957778fecb"
     content: |
-      echo \\\"let\'s turn this host into a CLIENT !\\\"
-      ls -a .
+      touch EXECUTION_CLIENT_REUSSIE
+      echo \"File created on client\"
       
   - script:
     _key: "7673042d8bc11b92d32bc6240b32b082"
@@ -30,8 +30,8 @@ list:
       - "56bb506e24d8ff19bc4244b2f8d3543e"
       - "3ae9b9ff69a78d614864f1957778fecb"
     content: |
-      echo \\\"let\'s turn this host into a CLIENT !\\\"
-      ls -a .
+      touch EXECUTION_DISS_REUSSIE
+      echo \"File created on DISS\"
 
   - script:
     _key: "f0954833a9859b481b1053a0a44914e8"
@@ -41,5 +41,5 @@ list:
       - "56bb506e24d8ff19bc4244b2f8d3543e"
       - "3ae9b9ff69a78d614864f1957778fecb"
     content: |
-      echo \\\"let\'s turn this host into a CLIENT !\\\"
-      ls -a .
+      touch EXECUTION_REPS_REUSSIE
+      echo \"File created on REPS\"

@@ -849,6 +849,7 @@ pub struct NodeDiss {
     pub _key: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NodeOs {
     pub name: String,
     pub version: String,
@@ -908,6 +909,9 @@ Useful AQL queries :
 
 - Which clients are handled by [specific DISS] ?
 FOR val IN handles FILTER val._from == "diss/3084" RETURN val._to
+
+- To which OS a host (client/3799) is connected to ?
+for link in uses_os filter link._from == "clients/3799" return link._to
 
 - Which DISS are compatible with [specific OS] ?
 FOR val IN diss_compatible_with FILTER val._to == "os/3291" RETURN val._from
