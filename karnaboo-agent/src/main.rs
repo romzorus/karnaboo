@@ -98,7 +98,7 @@ fn main() {
     // TBD eventually : for the time being, we assume every request is granted
 
     // *********** 6. wait for decision and technical informations
-    let listener = TcpListener::bind("127.0.0.1:9016").expect("Unable to open socket 127.0.0.1:9016");
+    let listener = TcpListener::bind("127.0.0.1:9017").expect("Unable to open socket 127.0.0.1:9016");
     let (mut srv_stream, _srv_socket) = listener.accept().expect("Unable to establish connexion");
 
     let mut buffer: [u8; 2048] = [0; 2048];
@@ -134,8 +134,8 @@ fn main() {
 
     // Open a socket
     let mut socket_srv =
-        TcpStream::connect(server_socket).expect("Unable to connect to Karnaboo server");
-
+        TcpStream::connect(format!("{}:9016", server_socket.ip())).expect("Unable to connect to Karnaboo server");
+    
     // Send to server the serialized request
     socket_srv
         .write(&serialized_script_output.as_bytes())
