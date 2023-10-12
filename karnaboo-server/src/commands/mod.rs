@@ -63,7 +63,7 @@ pub fn show_welcome_message() {
     println!(r" ██╔═██╗ ██╔══██║██╔══██╗██║╚██╗██║██╔══██║██╔══██╗██║   ██║██║   ██║");
     println!(r" ██║  ██╗██║  ██║██║  ██║██║ ╚████║██║  ██║██████╔╝╚██████╔╝╚██████╔╝");
     println!(r" ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═════╝ ");
-    println!(r"");
+    println!(r"                                 https://gitlab.com/romzorus/karnaboo");
 }
 
 pub fn show_goodbye_message() {
