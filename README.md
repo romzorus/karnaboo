@@ -49,9 +49,10 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 
 - server can create a database and the required collections from scratch
 - direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
-- agent can send a request with its real informations through the network
-- server can receive and buffer multiple requests and let the administrator (user) decide to agree or drop each one
-- server can actually fill the database with real client's informations and create appropriate edges and nodes
+- agent can register with the server, receive a script from it, execute and send the return back to the server
+- server can receive and buffer multiple registration requests and let the administrator (user) decide to register or not each one
+- server can fill the database with real client's informations and create appropriate edges and nodes
+- server is beginning to enforce the roles : it checks each host in the database and send it the appropriate script for execution
 
 
 ## TO-DO list
@@ -68,12 +69,14 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] have a single connexion to the database and pass its reference to the functions (instead of having each function create its own connexion each time)
 - [ ] add a functionality to ensure a host is only in one collection (ArangoDB allows documents to have the same _key if they are in different collections, meaning a host can appear as a client and as a DISS at the same time)
 - [ ] scripts to implement role on supported OSs
+- [ ] 9015 port for new hosts, 9016 port for known hosts
 
 *** Agent side ***
 - [ ] functions to make the local system act accordingly to its new role (change repositories, perform a mirroring of remote repositories...)
 - [ ] get a script and its parameters from the server, execute it and send the result back to the server
 
 *** Others ***
+- [ ] reorganize the code in a proper way, split the big functions, gather functions in specific files, improve readability
 - [ ] visuals for the "Principles" and "Usage" sections
 - [ ] comment the code
 - [ ] begin user documentation
