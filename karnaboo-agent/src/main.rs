@@ -110,16 +110,14 @@ fn main() {
         serde_json::from_str(&serialized_content)
             .expect("Unable to deserialize data received from TcpStream");
 
-
     // *********** 7. implement the decision with received technical informations
     println!("**** Execute the final instructions ****");
     let script_output = Command::new("sh")
         .arg("-c")
-        .arg(final_instructions.script_content)
+        .arg(format!("{}", final_instructions.script_content))
         .output()
         .expect("Wrong command");
 
-    
     // *********** 8. send the result back to the server
 
     // std::process::Output type doesn't natively support serialization.
@@ -145,7 +143,7 @@ fn main() {
 
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct FinalInstructions {
     script_content: String
 }
