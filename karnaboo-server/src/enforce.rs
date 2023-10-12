@@ -1,5 +1,5 @@
 use std::net::SocketAddr;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::net::TcpStream;
 use arangors::uclient::reqwest::ReqwestClient;
 use arangors::Connection;
@@ -7,14 +7,13 @@ use arangors::Database;
 use config::{self, Config, File, FileFormat};
 use serde::{Deserialize, Serialize};
 use std::process::exit;
-
-
+use std::net::TcpListener;
 
 use crate::database::{NodeHostRequest, NodeReps, NodeDiss, NodeClient};
-use crate::configuration::DatabaseInfo;
+use crate::configuration::{DatabaseInfo, Networking};
 use crate::database::NodeOs;
 
-pub async fn enforce(db_info: &DatabaseInfo) {
+pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -37,12 +36,10 @@ pub async fn enforce(db_info: &DatabaseInfo) {
         .unwrap();
 
         for reps in reps_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, reps._key.as_str(), "reps", format!("{}:9016", reps.ip).parse().unwrap()).await;
-        println!("----------------");
-        println!("  ** Host : {} at {}", reps.hostname, reps.ip);
-        println!("  ** Exec return :");
+        let exec_return = enforce_specific_host(&db_connector, reps._key.as_str(), "reps", format!("{}:9016", reps.ip).parse().unwrap(), networking_info).await;
+        println!("      ** Exec return : START");
         println!("{}", exec_return.stdout);
-        println!("");
+        println!("      ** Exec return : END");
     }
 
     // Pursuing with the DISS
@@ -53,12 +50,10 @@ pub async fn enforce(db_info: &DatabaseInfo) {
         .unwrap();
 
         for diss in diss_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, diss._key.as_str(), "diss", format!("{}:9016", diss.ip).parse().unwrap()).await;
-        println!("----------------");
-        println!("  ** Host : {} at {}", diss.hostname, diss.ip);
-        println!("  ** Exec return :");
+        let exec_return = enforce_specific_host(&db_connector, diss._key.as_str(), "diss", format!("{}:9016", diss.ip).parse().unwrap(), networking_info).await;
+        println!("      ** Exec return : START");
         println!("{}", exec_return.stdout);
-        println!("");
+        println!("      ** Exec return : END");
     }
 
     // Ending with the clients
@@ -69,17 +64,15 @@ pub async fn enforce(db_info: &DatabaseInfo) {
         .unwrap();
 
         for client in client_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, client._key.as_str(), "client", format!("{}:9016", client.ip).parse().unwrap()).await;
-        println!("----------------");
-        println!("  ** Host : {} at {}", client.hostname, client.ip);
-        println!("  ** Exec return :");
+        let exec_return = enforce_specific_host(&db_connector, client._key.as_str(), "client", format!("{}:9016", client.ip).parse().unwrap(), networking_info).await;
+        println!("      ** Exec return : START");
         println!("{}", exec_return.stdout);
-        println!("");
+        println!("      ** Exec return : END");
     }
 
 }
 
-pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str, host_socket: SocketAddr) -> ExecutionResult {
+pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str, host_socket: SocketAddr, networking_info: &Networking) -> ExecutionResult {
     println!("  - Enforcing a {} at {}", role, host_socket.ip());
 
     // 1. Get the appropriate script
@@ -102,7 +95,7 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
     send_script_to_host(host_socket, final_instructions);
 
     // 4. Wait for its return
-    let host_exec_result = wait_for_host_exec_return();
+    let host_exec_result = wait_for_host_exec_return(networking_info);
 
     // 5. Return that result
     host_exec_result
@@ -110,10 +103,24 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
 
 
 
-pub fn wait_for_host_exec_return() -> ExecutionResult {
-    // Do something
-    println!("WAIT_FOR_EXEC_RETURN : TESTING PHASE");
-    ExecutionResult { exit_status: String::from(""), stdout: String::from(""), stderr: String::from("") }
+pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResult {
+    // Open socket
+    let listener = TcpListener::bind(format!("{}:9016", networking_info.server_address)).expect(format!("Unable to open socket at {}:9016", networking_info.server_address).as_str());
+    let (mut srv_stream, _srv_socket) = listener.accept().expect("Unable to establish connexion");
+
+    // Get serialized data
+    let mut buffer: [u8; 2048] = [0; 2048];
+    let size = srv_stream
+        .read(&mut buffer)
+        .expect("Unable to read from TcpStream");
+    let serialized_content = String::from_utf8_lossy(&buffer[..size]);
+
+    // Deserialize
+    let execution_result: ExecutionResult =
+    serde_json::from_str(&serialized_content)
+        .expect("Unable to deserialize data received from TcpStream"); 
+
+    execution_result
 }
 
 pub fn adapt_instruction(role: &str, generic_instructions: FinalInstructions) -> FinalInstructions {
@@ -181,7 +188,8 @@ pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalIns
     let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
 
     let mut stream_client =
-    TcpStream::connect(host_socket).expect("Unable to connect to host\'s agent");
+    // TcpStream::connect(host_socket).expect("Unable to connect to host\'s agent");
+    TcpStream::connect(format!("{}:9017", host_socket.ip())).expect("Unable to connect to host\'s agent");
 
     stream_client
         .write(&serialized_instructions.as_bytes())
