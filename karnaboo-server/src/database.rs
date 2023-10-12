@@ -782,6 +782,7 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Resu
                 // Also, since a script can be associated to multiple os,
                 // the script is going to be linked to every compatible os
                 // already existing in the database
+                println!("{}", "    ↪ Script linked to os".bold().blue());
                 for compatible_os in script.compatible_with.into_iter() {
                     let edge_creation_query = format!(
                         r#"UPSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} INSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} UPDATE {{ }} IN script_compatible_with"#,
@@ -793,7 +794,7 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Resu
                             
                     let _: Vec<serde_json::Value> = match db.aql_str(&edge_creation_query.as_str()).await {
                         Ok(content) => {
-                            println!("{}", format!("Script (role {}) linked to os", role).bold().blue());
+                            println!("{}", "        ↪ Script linked to a compatible os".bold().blue());
                             content
                         }
                         Err(e) => {
