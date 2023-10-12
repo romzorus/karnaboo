@@ -10,6 +10,13 @@
 #   echo "$(date)" | md5sum
 #     5f221571aecfcdd203d30957cf9896a0
 
+# Guidelines to write the scripts content :
+  # - can be executed multiple times without problem, meaning it has
+  # to check whether the job is already done or not
+  # - respect the YAML indentation
+  # - " ' must be escaped \", as if it were
+  # going to be printed by a "print!()"
+
 list:
   - script:
     _key: "8b4bc5d63eb95e3eaab346a7b2e350b3"
@@ -41,5 +48,7 @@ list:
       - "56bb506e24d8ff19bc4244b2f8d3543e"
       - "3ae9b9ff69a78d614864f1957778fecb"
     content: |
-      touch EXECUTION_REPS_REUSSIE
-      echo \"File created on REPS\"
+      for i in 1 2 3 4 5
+      do
+        echo $i \"€\"
+      done
