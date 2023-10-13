@@ -24,7 +24,7 @@ list:
     compatible_with:
       - "093005508bb26f610f57a78826b84b3b"
       - "56bb506e24d8ff19bc4244b2f8d3543e"
-      - "3ae9b9ff69a78d614864f1957778fecb"
+      - "f927102807a513e0e1d0eea9e7505b57"
     content: |
       touch EXECUTION_CLIENT_REUSSIE
       echo \"File created on client\"
@@ -35,7 +35,7 @@ list:
     compatible_with:
       - "093005508bb26f610f57a78826b84b3b"
       - "56bb506e24d8ff19bc4244b2f8d3543e"
-      - "3ae9b9ff69a78d614864f1957778fecb"
+      - "f927102807a513e0e1d0eea9e7505b57"
     content: |
       touch EXECUTION_DISS_REUSSIE
       echo \"File created on DISS\"
@@ -46,9 +46,7 @@ list:
     compatible_with:
       - "093005508bb26f610f57a78826b84b3b"
       - "56bb506e24d8ff19bc4244b2f8d3543e"
-      - "3ae9b9ff69a78d614864f1957778fecb"
+      - "f927102807a513e0e1d0eea9e7505b57"
     content: |
-      for i in 1 2 3 4 5
-      do
-        echo $i \"€\"
-      done
+      touch EXECUTION_REPS_REUSSIE
+      echo \"File created on REPS\"
