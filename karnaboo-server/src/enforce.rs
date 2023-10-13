@@ -192,13 +192,20 @@ pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalIns
      // Serialization before sending to socket
     let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
 
-    let mut stream_client =
+    let mut stream_client: TcpStream;
     // TcpStream::connect(host_socket).expect("Unable to connect to host\'s agent");
-    TcpStream::connect(format!("{}:9017", host_socket.ip())).expect("Unable to connect to host\'s agent");
+    match TcpStream::connect(format!("{}:9017", host_socket.ip())) {
+        Ok(stream) => {
+            stream_client = stream;
 
-    stream_client
-        .write(&serialized_instructions.as_bytes())
-        .expect("Unable to send data to the host");
+            stream_client
+                .write(&serialized_instructions.as_bytes())
+                .expect("Unable to send data to the host");
+        }
+        Err(e) => {
+            println!("Error : unable to connect to host\'s agent");
+        }
+    }    
 }
 
 
