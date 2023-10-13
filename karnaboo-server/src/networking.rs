@@ -81,7 +81,7 @@ pub async fn thread_networking(
                             format!(
                                 "New request for client role from \'{}\' at {}",
                                 content.hostname,
-                                stream.local_addr().unwrap().ip()
+                                stream.peer_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -89,7 +89,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Client(NodeClient {
                             hostname: content.hostname.clone(),
-                            ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
@@ -101,7 +101,7 @@ pub async fn thread_networking(
                             format!(
                                 "New request for DISS role from \'{}\' at {}",
                                 content.hostname,
-                                stream.local_addr().unwrap().ip()
+                                stream.peer_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -109,7 +109,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Diss(NodeDiss {
                             hostname: content.hostname.clone(),
-                            ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
@@ -121,7 +121,7 @@ pub async fn thread_networking(
                             format!(
                                 "New request for REPS role from \'{}\' at {}",
                                 content.hostname,
-                                stream.local_addr().unwrap().ip()
+                                stream.peer_addr().unwrap().ip()
                             )
                             .bold()
                             .blue()
@@ -129,7 +129,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Reps(NodeReps {
                             hostname: content.hostname.clone(),
-                            ip: stream.local_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
