@@ -126,7 +126,12 @@ pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResul
 pub fn adapt_instruction(role: &str, generic_instructions: FinalInstructions) -> FinalInstructions {
     // Do something
     println!("ADAPT_INSTRUCTION : TESTING PHASE");
-    generic_instructions
+
+    let adapted_instruction = FinalInstructions {
+        script_content: format!("ROLE={}\n", role) + generic_instructions.script_content.as_str()
+    };
+
+    adapted_instruction
 }
 
 pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str) -> Result<FinalInstructions, String> {

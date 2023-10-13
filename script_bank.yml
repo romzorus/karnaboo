@@ -28,6 +28,7 @@ list:
     content: |
       touch EXECUTION_CLIENT_REUSSIE
       echo \"File created on client\"
+      echo \"Your role is now $ROLE\"
       
   - script:
     _key: "7673042d8bc11b92d32bc6240b32b082"
@@ -39,6 +40,7 @@ list:
     content: |
       touch EXECUTION_DISS_REUSSIE
       echo \"File created on DISS\"
+      echo \"Your role is now $ROLE\"
 
   - script:
     _key: "f0954833a9859b481b1053a0a44914e8"
@@ -50,3 +52,4 @@ list:
     content: |
       touch EXECUTION_REPS_REUSSIE
       echo \"File created on REPS\"
+      echo \"Your role is now $ROLE\"
