@@ -6,7 +6,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-use arangors::Connection;
+use arangors::{Connection, database};
 use colored::Colorize;
 use config::{self, Config, File, FileFormat};
 use futures::lock::Mutex;
@@ -791,7 +791,10 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Resu
                         script._key,
                         compatible_os
                     );
-                            
+                    // This query creates the "script_compatible_with" link even if the os is not present in the database.
+                    // The others functions are not affected by this edge existing for nothing (at the moment) and, if this
+                    // os shows up later in the database, the link will already be there.
+
                     let _: Vec<serde_json::Value> = match db.aql_str(&edge_creation_query.as_str()).await {
                         Ok(content) => {
                             println!("{}", "        ↪ Script linked to a compatible os".bold().blue());

@@ -25,7 +25,7 @@ pub fn help() {
         "status".bold()
     );
     println!(
-        "{}    °° Directly enter AQL queries and get results from the database °° aql",
+        "{}    °° Enter AQL queries and get results from the database °° aql",
         "aqlmode".bold()
     );
     println!(
@@ -64,6 +64,7 @@ pub fn show_welcome_message() {
     println!(r" ██║  ██╗██║  ██║██║  ██║██║ ╚████║██║  ██║██████╔╝╚██████╔╝╚██████╔╝");
     println!(r" ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═════╝ ");
     println!(r"                                 https://gitlab.com/romzorus/karnaboo");
+    println!("");
 }
 
 pub fn show_goodbye_message() {

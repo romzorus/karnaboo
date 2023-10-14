@@ -5,7 +5,7 @@ Streamline your update flows in open source environments !
 
 ## Context and objective
 
-As I wanted to learn Rust and programming in general, I set myself an overly ambitious goal to see where it takes me : build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their OS version and their position in the topology. **The goal here is to have all these update flows and configurations managed in a centralized way.** Such a system has been around for a long time in "non-free environments" and it probably already exists for open source infrastructures as well, but, since my goal here is to learn by doing, I voluntarily didn't search for it and just started coding (not reinventing "apt-mirror" here. On the contrary, we use it and try to build upon it).
+As I wanted to learn Rust and programming in general, I set myself an overly ambitious goal to see where it takes me : build a tool to help administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure. Instead of having multiple hosts downloading the same upgrades and stressing the organisation's internet connectivity, one local mirror of the repositories is available for them, depending on their OS version and their position in the topology. **The goal here is to have all these update flows and configurations managed in a centralized way.** Such a system has been around for a long time in "non-free environments" and it probably already exists for open source infrastructures as well, but, since my goal here is to learn by doing, I voluntarily didn't search for it and just started coding (not reinventing "apt-cache" here. On the contrary, we use it and try to build upon it).
 
 I am releasing this tool as an open source project for the following reasons :
 - it might help someone somewhere someday
@@ -83,6 +83,7 @@ The Karnaboo server will then tell each machine what to do (where to look for up
 - [ ] encrypt communications
 - [ ] actual scripts to implement role on supported OS
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
+- [ ] create installation script
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
