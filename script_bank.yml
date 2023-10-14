@@ -27,7 +27,7 @@ list:
       - "093005508bb26f610f57a78826b84b3b" # Linux Mint 21
     content: |
       mv /etc/apt/sources.list.d/official-package-repositories.list /etc/apt/sources.list.d/official-package-repositories.list.old
-      cat /etc/apt/sources.list.d/official-package-repositories.list.old | grep -v \'^#\' | grep . | sed \"s\http://\http://$IP_DISS:3142/\g\" | sed \"s\https://\https://$IP_DISS:3142/\g\" > /etc/apt/sources.list.d/karnaboo.list
+      cat /etc/apt/sources.list.d/official-package-repositories.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_DISS:3142/\\g\" | sed \"s\\https://\\https://$IP_DISS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
       
   - script:
     _key: "7535eaca819afbe6836f184b7c237acd"
@@ -36,10 +36,11 @@ list:
       - "093005508bb26f610f57a78826b84b3b" # Linux Mint 21
     content: |
       mv /etc/apt/sources.list.d/official-package-repositories.list /etc/apt/sources.list.d/official-package-repositories.list.old
-      cat /etc/apt/sources.list.d/official-package-repositories.list.old | grep -v \'^#\' | grep . | sed \"s\http://\http://$IP_REPS:3142/\g\" | sed \"s\https://\https://$IP_REPS:3142/\g\" > /etc/apt/sources.list.d/karnaboo.list
+      cat /etc/apt/sources.list.d/official-package-repositories.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_REPS:3142/\\g\" | sed \"s\\https://\\https://$IP_REPS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
+      apt update
       DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
-      mv /etc/apt-cacher-ng/acng.conf /etc/apt-cacher-ng/acng.conf.old
-      cat /etc/apt-cacher-ng/acng.conf.old | sed \"/# Proxy: https:\/\/username:proxypassword@proxy.example.net:3129/aProxy: http:\/\/$IP_REPS:3142\" > /etc/apt-cacher-ng/acng.conf
+      cp /etc/apt-cacher-ng/acng.conf /etc/apt-cacher-ng/acng.conf.old
+      sed -i \'/# Proxy: https:\\\/\\\/username:proxypassword@proxy.example.net:3129/aProxy: http:\\\/\\\/$IP_REPS:3142\' /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
 
   - script:
