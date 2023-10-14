@@ -147,7 +147,7 @@ pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &st
             } else {
                 Ok(
                     FinalInstructions {
-                        script_content: format!("IP_DISS={}\n", ip_diss[0]) + generic_instructions.script_content.as_str()
+                        script_content: generic_instructions.script_content.replace("$IP_DISS", ip_diss[0].as_str())
                     }
                 )
             }
@@ -165,7 +165,7 @@ pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &st
             } else {
                 Ok(
                     FinalInstructions {
-                        script_content: format!("IP_REPS={}\n", ip_reps[0]) + generic_instructions.script_content.as_str()
+                        script_content: generic_instructions.script_content.replace("$IP_REPS", ip_reps[0].as_str())
                     }
                 )
             }
