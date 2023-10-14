@@ -116,11 +116,19 @@ pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResul
     let serialized_content = String::from_utf8_lossy(&buffer[..size]);
 
     // Deserialize
-    let execution_result: ExecutionResult =
-    serde_json::from_str(&serialized_content)
-        .expect("Unable to deserialize data received from TcpStream"); 
+    match serde_json::from_str(&serialized_content) {
+        Ok(content) => {
+            content
+        }
+        Err(e) => {
+            ExecutionResult {
+                exit_status: "Error".to_string(),
+                stdout: "Unable to deserialize data received from TcpStream".to_string(),
+                stderr: "Unable to deserialize data received from TcpStream".to_string()
+            }
+        }
+    }
 
-    execution_result
 }
 
 pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &str, host_key: &str, generic_instructions: FinalInstructions) -> Result<FinalInstructions, String> {
