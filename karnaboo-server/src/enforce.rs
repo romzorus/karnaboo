@@ -36,10 +36,10 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
         .unwrap();
 
         for reps in reps_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, reps._key.as_str(), "reps", format!("{}:9016", reps.ip).parse().unwrap(), networking_info).await;
-        println!("      ** Exec return : START");
-        println!("{}", exec_return.stdout);
-        println!("      ** Exec return : END");
+            let exec_return = enforce_specific_host(&db_connector, reps._key.as_str(), "reps", format!("{}:9016", reps.ip).parse().unwrap(), networking_info).await;
+            println!("      ** Exec return : START");
+            println!("{}", exec_return.stdout);
+            println!("      ** Exec return : END");
     }
 
     // Pursuing with the DISS
@@ -50,10 +50,10 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
         .unwrap();
 
         for diss in diss_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, diss._key.as_str(), "diss", format!("{}:9016", diss.ip).parse().unwrap(), networking_info).await;
-        println!("      ** Exec return : START");
-        println!("{}", exec_return.stdout);
-        println!("      ** Exec return : END");
+            let exec_return = enforce_specific_host(&db_connector, diss._key.as_str(), "diss", format!("{}:9016", diss.ip).parse().unwrap(), networking_info).await;
+            println!("      ** Exec return : START");
+            println!("{}", exec_return.stdout);
+            println!("      ** Exec return : END");
     }
 
     // Ending with the clients
@@ -64,10 +64,10 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
         .unwrap();
 
         for client in client_list.into_iter() {
-        let exec_return = enforce_specific_host(&db_connector, client._key.as_str(), "client", format!("{}:9016", client.ip).parse().unwrap(), networking_info).await;
-        println!("      ** Exec return : START");
-        println!("{}", exec_return.stdout);
-        println!("      ** Exec return : END");
+            let exec_return = enforce_specific_host(&db_connector, client._key.as_str(), "client", format!("{}:9016", client.ip).parse().unwrap(), networking_info).await;
+            println!("      ** Exec return : START");
+            println!("{}", exec_return.stdout);
+            println!("      ** Exec return : END");
     }
 
 }
@@ -92,13 +92,23 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
     let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions).await.unwrap();
 
     // 3. Send this script to the host
-    send_script_to_host(host_socket, final_instructions);
+    match send_script_to_host(host_socket, final_instructions) {
+        Ok(_) => {
+            // 4. Wait for its return
+            let host_exec_result = wait_for_host_exec_return(networking_info);
 
-    // 4. Wait for its return
-    let host_exec_result = wait_for_host_exec_return(networking_info);
+            // 5. Return that result
+            host_exec_result
+        }
+        Err(e) => {
+            ExecutionResult {
+                exit_status: "Error".to_string(),
+                stdout: "Unable send script to the host".to_string(),
+                stderr: e.to_string()
+            }
+        }
+    }
 
-    // 5. Return that result
-    host_exec_result
 }
 
 
@@ -124,7 +134,7 @@ pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResul
             ExecutionResult {
                 exit_status: "Error".to_string(),
                 stdout: "Unable to deserialize data received from TcpStream".to_string(),
-                stderr: "Unable to deserialize data received from TcpStream".to_string()
+                stderr: e.to_string()
             }
         }
     }
@@ -233,7 +243,7 @@ pub fn get_script_from_source_file(role: &str, os: &str) -> Result<Script, Strin
 }
 
 // This function handles the networking part of sending the instructions to the host
-pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalInstructions) {
+pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalInstructions) -> Result<bool, String> {
 
      // Serialization before sending to socket
     let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
@@ -247,9 +257,11 @@ pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalIns
             stream_client
                 .write(&serialized_instructions.as_bytes())
                 .expect("Unable to send data to the host");
+
+            Ok(true)
         }
         Err(e) => {
-            println!("Error : unable to connect to host\'s agent");
+            Err(format!("Error : {}", e))
         }
     }    
 }
