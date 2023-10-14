@@ -89,7 +89,7 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
     };
 
     // 2. Adapt the script to the specific topology of the host
-    let final_instructions = adapt_instruction( role, generic_instructions);
+    let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions).await.unwrap();
 
     // 3. Send this script to the host
     send_script_to_host(host_socket, final_instructions);
@@ -123,15 +123,53 @@ pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResul
     execution_result
 }
 
-pub fn adapt_instruction(role: &str, generic_instructions: FinalInstructions) -> FinalInstructions {
-    // Do something
-    println!("ADAPT_INSTRUCTION : TESTING PHASE");
-
-    let adapted_instruction = FinalInstructions {
-        script_content: format!("ROLE={}\n", role) + generic_instructions.script_content.as_str()
-    };
-
-    adapted_instruction
+pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &str, host_key: &str, generic_instructions: FinalInstructions) -> Result<FinalInstructions, String> {
+       
+    match role {
+        "client" => {
+            // A client needs the IP address of its DISS
+            let ip_diss: Vec<String> = db_connector
+                .aql_str(format!("FOR link IN handles FILTER link._to == \"clients/{}\" RETURN document(link._from).ip",
+                host_key).as_str())
+                .await
+                .unwrap();
+            if ip_diss.len() != 1 {
+                println!("This client is connected to none or too much DISS. Abort");
+                Err(format!("ip_diss = {:?}", ip_diss))
+            } else {
+                Ok(
+                    FinalInstructions {
+                        script_content: format!("IP_DISS={}\n", ip_diss[0]) + generic_instructions.script_content.as_str()
+                    }
+                )
+            }
+        }
+        "diss" => {
+            // A DISS needs the IP address of its REPS and [..?]
+            let ip_reps: Vec<String> = db_connector
+            .aql_str(format!("FOR link IN redistributes_to FILTER link._to == \"diss/{}\" RETURN document(link._from).ip",
+            host_key).as_str())
+            .await
+            .unwrap();
+            if ip_reps.len() != 1 {
+                println!("This DISS is connected to none or too much REPS. Abort");
+                Err(format!("ip_reps = {:?}", ip_reps))
+            } else {
+                Ok(
+                    FinalInstructions {
+                        script_content: format!("IP_REPS={}\n", ip_reps[0]) + generic_instructions.script_content.as_str()
+                    }
+                )
+            }
+        }
+        "reps" => {
+            // A REPS needs [.. ?]
+            Ok(generic_instructions)
+        }
+        _ => {
+            Err(String::from("Error reading the role argument"))
+        }
+    }
 }
 
 pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str) -> Result<FinalInstructions, String> {
