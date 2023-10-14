@@ -7,7 +7,9 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
     let mut builder = IdBuilder::new(Encryption::SHA256);
     builder
         .add_component(HWIDComponent::CPUID)
-        .add_component(HWIDComponent::MacAddress);
+        .add_component(HWIDComponent::MacAddress)
+        .add_component(HWIDComponent::MachineName)
+        .add_component(HWIDComponent::Username);
 
     // System information gathering
     let mut sys = System::new_all();
@@ -29,7 +31,7 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
 }
 
 // If you want this machine to become a DISS or REPS, it needs at least xxx gb of free space
-const MIN_FREE_SPACE_FOR_DISS_REPS: u64 = 300; // Unit : GB
+const MIN_FREE_SPACE_FOR_DISS_REPS: u64 = 3; // Unit : GB
 
 pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) -> bool {
     // For now, only the available space is watched
