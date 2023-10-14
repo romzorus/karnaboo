@@ -29,7 +29,7 @@ list:
       mv /etc/apt/sources.list.d/official-package-repositories.list /etc/apt/sources.list.d/official-package-repositories.list.old
       cat /etc/apt/sources.list.d/official-package-repositories.list.old | grep -v \'^#\' | grep . | sed \"s\http://\http://$IP_DISS:3142/\g\" | sed \"s\https://\https://$IP_DISS:3142/\g\" > /etc/apt/sources.list.d/karnaboo.list
       
-- script:
+  - script:
     _key: "7535eaca819afbe6836f184b7c237acd"
     role: "diss"
     compatible_with:
@@ -42,7 +42,7 @@ list:
       cat /etc/apt-cacher-ng/acng.conf.old | sed \"/# Proxy: https:\/\/username:proxypassword@proxy.example.net:3129/aProxy: http:\/\/$IP_REPS:3142\" > /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
 
-- script:
+  - script:
     _key: "d909df38b28abe8e436b56d219a26545"
     role: "reps"
     compatible_with:
