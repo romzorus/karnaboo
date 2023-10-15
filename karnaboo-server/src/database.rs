@@ -6,7 +6,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-use arangors::{Connection, database};
+use arangors::Connection;
 use colored::Colorize;
 use config::{self, Config, File, FileFormat};
 use futures::lock::Mutex;
@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use crate::commands::yes_or_no_question;
 use crate::configuration::DatabaseInfo;
-use crate::enforce::{self, get_script_from_source_file};
+use crate::enforce::get_script_from_source_file;
 
 // Let the user directly interact with the database via AQL queries ("AQL mode").
 // With AQL queries, the user is limited and cannot create or delete database or collections.
@@ -587,7 +587,7 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
                     )
                     .red()
                 );
-                return (Err(ReadlineError::Interrupted));
+                return Err(ReadlineError::Interrupted);
             }
         }
         NodeHostRequest::Diss(host_info) => {
@@ -609,7 +609,7 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
                     )
                     .red()
                 );
-                return (Err(ReadlineError::Interrupted));
+                return Err(ReadlineError::Interrupted);
             }
         }
         NodeHostRequest::Reps(host_info) => {
@@ -900,28 +900,3 @@ struct Os {
     repositories: Vec<String>,
 }
 
-// let collection_clients = db.collection("clients").await.unwrap();
-// let collection_reps = db.collection("reps").await.unwrap();
-// let collection_diss = db.collection("diss").await.unwrap();
-// let collection_os = db.collection("os").await.unwrap();
-
-// }
-
-/* Notes for upcoming functions
-
-Useful AQL queries :
-
-- Which clients are handled by [specific DISS] ?
-FOR val IN handles FILTER val._from == "diss/3084" RETURN val._to
-
-- To which OS a host (client/3799) is connected to ?
-for link in uses_os filter link._from == "clients/3799" return link._to
-
-- Which DISS are compatible with [specific OS] ?
-FOR val IN diss_compatible_with FILTER val._to == "os/3291" RETURN val._from
-
-- Which clients are not connected to a DISS (to any of the existing DISSs) ?
-FOR client IN clients FILTER client._key NOT IN (FOR handle IN handles RETURN LTRIM(handle._to, "clients/")) RETURN client.hostname
-
-UPSERT: Update/replace an existing document, or create it in the case it does not exist.
-*/

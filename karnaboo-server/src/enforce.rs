@@ -1,3 +1,10 @@
+/*
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+*/
 use std::net::SocketAddr;
 use std::io::{Read, Write};
 use std::net::TcpStream;
@@ -9,9 +16,9 @@ use serde::{Deserialize, Serialize};
 use std::process::exit;
 use std::net::TcpListener;
 
-use crate::database::{NodeHostRequest, NodeReps, NodeDiss, NodeClient};
+use crate::database::{NodeReps, NodeDiss, NodeClient};
 use crate::configuration::{DatabaseInfo, Networking};
-use crate::database::NodeOs;
+
 
 pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
     let db_connection = Connection::establish_basic_auth(

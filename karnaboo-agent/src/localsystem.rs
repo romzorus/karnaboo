@@ -1,6 +1,6 @@
 use colored::Colorize;
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
-use sysinfo::{CpuExt, DiskExt, NetworkExt, NetworksExt, ProcessExt, System, SystemExt};
+use sysinfo::{DiskExt, System, SystemExt};
 
 pub fn get_local_system_conf() -> LocalSystemConfig {
     // Unique Host ID building

@@ -8,13 +8,10 @@ You should have received a copy of the GNU General Public License along with thi
 
 use crate::configuration::Networking;
 use crate::database::{self, NodeClient, NodeDiss, NodeHostRequest, NodeReps};
-use arangors::uclient::reqwest::ReqwestClient;
-use arangors::Database;
 use colored::Colorize;
 use futures::lock::Mutex;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::net::{TcpListener, TcpStream};
-use std::sync::mpsc::Sender;
 use std::sync::Arc;
 
 pub async fn thread_networking(
