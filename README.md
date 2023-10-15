@@ -54,6 +54,7 @@ After registering each host in the database, the Karnaboo server will then tell 
 ### Compatible distributions for client/DISS/REPS role (as of 15/10/2023)
 
 - Linux Mint 21
+- Ubuntu 22.04
 - Ubuntu 23.04
 
 ## TO-DO list
