@@ -45,7 +45,7 @@ After registering each host in the database, the Karnaboo server will then tell 
 2. Organize your update flows by linking nodes in the database
 3. Enforce your virtual structure through the server/agents
 
-## Features
+## What is already working
 
 - direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
