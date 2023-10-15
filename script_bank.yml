@@ -50,16 +50,34 @@ list:
       - "093005508bb26f610f57a78826b84b3b" # Linux Mint 21
     content: |
       DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
-      
-  # - script:
-  #   _key: "f0954833a9859b481b1053a0a44914e8"
-  #   role: "reps"
-  #   compatible_with:
-  #     - "093005508bb26f610f57a78826b84b3b"
-  #     - "56bb506e24d8ff19bc4244b2f8d3543e"
-  #     - "f927102807a513e0e1d0eea9e7505b57"
-  #   content: |
-  #     touch EXECUTION_REPS_REUSSIE
-  #     echo \"File created on REPS\"
-  #     echo \"Your role is now $ROLE\"
 
+  - script:
+    _key: "16e1ff6dfd8b19c4c7d4eb55f3a4152a"
+    role: "client"
+    compatible_with:
+      - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
+    content: |
+      mv /etc/apt/sources.list /etc/apt/sources.list.old
+      cat /etc/apt/sources.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_DISS:3142/\\g\" | sed \"s\\https://\\https://$IP_DISS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
+
+  - script:
+    _key: "6c55e445df11d0eacef1178a94d57603"
+    role: "diss"
+    compatible_with:
+      - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
+    content: |
+      mv /etc/apt/sources.list /etc/apt/sources.list.old
+      cat /etc/apt/sources.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_REPS:3142/\\g\" | sed \"s\\https://\\https://$IP_REPS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
+      apt update
+      DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
+      cp /etc/apt-cacher-ng/acng.conf /etc/apt-cacher-ng/acng.conf.old
+      sed -i \'/# Proxy: https:\\\/\\\/username:proxypassword@proxy.example.net:3129/aProxy: http:\\\/\\\/$IP_REPS:3142\' /etc/apt-cacher-ng/acng.conf
+      systemctl restart apt-cacher-ng.service
+
+  - script:
+    _key: "ec6394fbb6161fa2f8aa2e897fc3a400"
+    role: "reps"
+    compatible_with:
+      - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
+    content: |
+      DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng

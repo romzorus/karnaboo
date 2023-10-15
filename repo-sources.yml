@@ -64,3 +64,19 @@ list:
       - "deb http://deb.debian.org/debian/ bookworm main non-free-firmware"
       - "deb http://security.debian.org/debian-security bookworm-security main non-free-firmware"
       - "deb http://deb.debian.org/debian/ bookworm-updates main non-free-firmware"
+
+  - os:
+    _key: "378a77e6b2543c4a08c9ef94bfa344d2"
+    osname: "Ubuntu"
+    osversion: "23.04"
+    repositories:
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar main restricted"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-updates main restricted"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar universe"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-updates universe"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar multiverse"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-updates multiverse"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-backports main restricted universe multiverse"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security main restricted"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security universe"
+      - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security multiverse"

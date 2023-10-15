@@ -51,9 +51,10 @@ After registering each host in the database, the Karnaboo server will then tell 
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
 - once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
 
-### Compatible distributions (as of 15/10/2023)
+### Compatible distributions for client/DISS/REPS role (as of 15/10/2023)
 
 - Linux Mint 21
+- Ubuntu 23.04
 
 ## TO-DO list
 (not in order of priority)
