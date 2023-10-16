@@ -25,19 +25,29 @@ In parallel, you have a Karnaboo server with its database running somewhere (whe
 After registering each host in the database, the Karnaboo server will then tell each machine what to do (where to look for updates...etc) according to the topology you decided in the database.
 
 ## Installation
-### Prerequisites
-- a functioning local Rust installation
-- a functioning ArangoDB instance
+There are no packages yet so you have to build the tool yourself. However, Rust (Cargo) makes it really easy for us.
 
-### Building
-*** Karnaboo server ***
-1. clone the "karnaboo-server" folder
-2. adapt the configuration file to your situation
-3. go to "karnaboo-server" and build with Rust : "cargo build --release"
+### Karnaboo server
+*** Prerequisites ***
+1. a functioning local [Rust installation] (https://www.rust-lang.org/fr/tools/install)
+2. a functioning [ArangoDB instance] (https://arangodb.com/download-major/)
+
+*** Building ***
+```
+git clone https://gitlab.com/romzorus/karnaboo.git
+cd karnaboo/karnaboo-server
+cargo build --release
+```
+Now your executable is in `target/release`. You can grab the file, place it anywhere and juste execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder.
 
 *** Karnaboo agent ***
-1. clone the "karnaboo-agent" folder
-3. go to "karnaboo-agent" and build with Rust : "cargo build --release"
+```
+git clone https://gitlab.com/romzorus/karnaboo.git
+cd karnaboo/karnaboo-agent
+cargo build --release
+```
+
+Now your executable is in `target/release`. You can grab the file, place it anywhere and juste execute it with `./karnaboo-agent` (with the appropriate arguments) or you can just stick to Rust and use `cargo run -- [arguments]`in the `karnaboo/karnaboo-agent` folder.
 
 ## Usage
 
