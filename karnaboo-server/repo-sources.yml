@@ -81,7 +81,6 @@ list:
       - "deb http://security.ubuntu.com/ubuntu jammy-security universe"
       - "deb http://security.ubuntu.com/ubuntu jammy-security multiverse"
 
-
   - os:
     _key: "378a77e6b2543c4a08c9ef94bfa344d2"
     osname: "Ubuntu"
@@ -97,3 +96,19 @@ list:
       - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security main restricted"
       - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security universe"
       - "deb http://fr.archive.ubuntu.com/ubuntu lunar-security multiverse"
+
+  - os:
+    _key: "1cbb0e9b35e9ccba858d547fb891ee0a"
+    osname: "Ubuntu"
+    osversion: "23.10"
+    repositories:
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic main restricted"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic-updates main restricted"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic universe"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic-updates universe"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic multiverse"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic-updates multiverse"
+      - "deb http://fr.archive.ubuntu.com/ubuntu/ mantic-backports main restricted universe multiverse"
+      - "deb http://security.ubuntu.com/ubuntu/ mantic-security main restricted"
+      - "deb http://security.ubuntu.com/ubuntu/ mantic-security universe"
+      - "deb http://security.ubuntu.com/ubuntu/ mantic-security multiverse"

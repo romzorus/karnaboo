@@ -4,7 +4,7 @@ Streamline your update flows in open source environments !
 
 ## Context and objective
 
-The goal of this tool is to let administrators regulate and streamline the update flows of their GNU/Linux hosts across an infrastructure **in a centralized and visual way**. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
+The goal of this tool is to let administrators regulate and streamline **in a centralized and visual way** the update flows of their GNU/Linux hosts across an infrastructure. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
 
 We wishfully hope that :
 - it might help someone somewhere someday,
@@ -31,7 +31,7 @@ There are no packages yet so you have to build the tool yourself. However, Rust 
 *** Prerequisites ***
 1. a functioning local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 2. a functioning [ArangoDB instance](https://arangodb.com/download-major/)
-3. only for building the Karnaboo server `# apt install build-essential pkg-config libssl-dev``
+3. `# apt install build-essential pkg-config libssl-dev``
 
 *** Building ***
 ```
@@ -39,7 +39,7 @@ git clone https://gitlab.com/romzorus/karnaboo.git
 cd karnaboo/karnaboo-server
 cargo build --release
 ```
-Now your executable is in `target/release`. You can grab the file, place it anywhere and juste execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder.
+Now your executable **karnaboo-server** is in the `target/release` folder. You can grab the file, place it anywhere and juste execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder.
 
 *** Karnaboo agent ***
 ```
@@ -48,7 +48,7 @@ cd karnaboo/karnaboo-agent
 cargo build --release
 ```
 
-Now your executable is in `target/release`. You can grab the file, place it anywhere and juste execute it with `./karnaboo-agent` (with the appropriate arguments) or you can just stick to Rust and use `cargo run -- [arguments]`in the `karnaboo/karnaboo-agent` folder.
+Now your executable **karnaboo-agent** is in the `target/release` folder. You can grab the file, place it anywhere and juste execute it with `./karnaboo-agent [arguments]` or you can just stick to Rust and use `cargo run -- [arguments]`in the `karnaboo/karnaboo-agent` folder.
 
 ## Usage
 
@@ -62,11 +62,14 @@ Now your executable is in `target/release`. You can grab the file, place it anyw
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
 - once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
 
-### Compatible distributions for client/DISS/REPS role (as of 15/10/2023)
+### Compatible distributions (as of 16/10/2023)
+
+All the following distributions have been successfully tested as clients, DISS and REPS :
 
 - Linux Mint 21
-- Ubuntu 22.04
-- Ubuntu 23.04
+- Ubuntu 22.04 (Desktop and Server)
+- Ubuntu 23.04 (Desktop and Server)
+- Ubuntu 23.10 (Desktop and Server)
 
 ## TO-DO list
 (not in order of priority)
@@ -95,7 +98,7 @@ Now your executable is in `target/release`. You can grab the file, place it anyw
 - [ ] begin user documentation
 - [ ] encrypt communications
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
-- [ ] create installation script
+- [ ] create installation script / packaging .deb and more
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
