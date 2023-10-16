@@ -17,17 +17,17 @@ The server sends specific instructions to each host depending on its position in
 role it is supposed to play now. Each host abides and reports when the adaptation is over.
 
 ### Different roles
-* Karnaboo server
-* Karnaboo agent :
-    - "REPS" (REPatriation Server) : located in your DMZ and actually getting the updates from the official repositories
-    - "DISS" (DIStribution Server) : located in your LAN, close to your clients, getting the updates from the REPS and making it available for the clients
-    - Client : local host requiring its updates (it can be a user terminal, a web server or anything else)
+* **Karnaboo server**
+* *Through Karnaboo agent*
+    - **REPS** (REPatriation Server) : located in your DMZ and actually getting the updates from the official repositories
+    - **DISS** (DIStribution Server) : located in your LAN, close to your clients, getting the updates from the REPS and making it available for the clients
+    - **Client** : local host requiring its updates (it can be a user terminal, a web server or anything else)
 
 ## Installation
 
 The tools themselves don't need to be *installed* indefinitely. The idea is to execute once, put everything in order, then leave your hosts alone. This isn't a supervision tool. Once they are correctly configured, your hosts leave their life on their own until you want to change everything again. In that case, you execute the server and the agents again.
 
-However, the content of the database remains after use. This allows you to re-enforce in case you need to replace a machine or something else changes. Also, you can make your topolgy evolve without starting from scratch again. You just start the server, start the agents and make them wait for instructions, change what you need to in the database, then enforce again.
+However, the content of the database remains after use. This allows you to re-enforce in case you need to replace a machine or something else changes. Also, you can make your topology evolve without starting from scratch again. You just start the server, start the agents and make them wait for instructions, change what you need in the database and enforce again.
 
 There are no packages yet so you have to build the tool yourself. However, Rust (Cargo) makes it really easy for us.
 
