@@ -6,7 +6,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-use arangors::Connection;
+use arangors::{Connection, graph::{Graph, EdgeDefinition}};
 use colored::Colorize;
 use config::{self, Config, File, FileFormat};
 use futures::lock::Mutex;
@@ -14,7 +14,8 @@ use rustyline::error::ReadlineError;
 use rustyline::{DefaultEditor, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::sync::Arc;
+use std::{sync::Arc, thread, time::Duration};
+use std::process::Command;
 
 use crate::commands::yes_or_no_question;
 use crate::configuration::DatabaseInfo;
@@ -231,6 +232,10 @@ pub async fn db_build(db_info: &DatabaseInfo) -> Result<()> {
     ] {
         let _ = db_create_update_edge_collection(db_info, edge_collection_name).await;
     }
+    println!("");
+    println!("--- Creating graph ---");
+
+    let _ = db_create_graph(db_info).await;
 
     Ok(())
 }
@@ -356,7 +361,7 @@ pub async fn db_create_update_node_collection(
                 );
             } else {
                 println!(
-                    "- collection \'{}\' : {} - problem encountered in creating collection",
+                    "- collection \'{}\' : {} - problem encountered when creating collection",
                     collection_name,
                     "NOK".red().bold()
                 );
@@ -403,7 +408,7 @@ pub async fn db_create_update_edge_collection(
                 );
             } else {
                 println!(
-                    "- collection \'{}\' : {} - problem encountered in creating collection",
+                    "- collection \'{}\' : {} - problem encountered when creating collection",
                     collection_name,
                     "NOK".red().bold()
                 );
@@ -821,6 +826,90 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Resu
     Ok(())
 }
 
+pub async fn db_create_graph(db_info: &DatabaseInfo)  -> Result<()> {
+
+    let db_connection = Connection::establish_basic_auth(
+        format!(
+            "http://{}:{}",
+            &db_info.arangodb_server_address, &db_info.arangodb_server_port
+        )
+        .as_str(),
+        &db_info.login,
+        &db_info.password,
+    )
+    .await
+    .unwrap();
+
+    let db = db_connection.db(&db_info.db_name).await.unwrap();
+
+    let handles_edge = EdgeDefinition {
+        collection: "handles".to_string(),
+        from: vec!["diss".to_string()],
+        to: vec!["clients".to_string()]
+    };
+
+    let redistributes_to_edge = EdgeDefinition {
+        collection: "redistributes_to".to_string(),
+        from: vec!["reps".to_string()],
+        to: vec!["diss".to_string()]
+    };
+
+    let my_hosts_graph = Graph::builder()
+        .name("all_my_hosts".to_string())
+        .edge_definitions(vec![handles_edge, redistributes_to_edge])
+        .orphan_collections(vec!["reps".to_string(), "diss".to_string(), "clients".to_string()])
+        .build();
+
+    match db.create_graph(my_hosts_graph, true).await {
+        Ok(_) => {
+            println!(
+                "- graph all_my_hosts : {} - created",
+                "Ok".green().bold()
+            );
+        }
+        Err(e) => {
+            
+            if format!("{:?}", e).contains("graph already exists") {
+                println!(
+                    "- graph all_my_hosts : {} - already existing",
+                    "OK".green().bold()
+                );
+            } else {
+                println!(
+                    "- graph all_my_hosts : {} - problem encountered whent creating graph",
+                        "NOK".red().bold()
+                );
+                println!("{:?}", e);
+            }
+        }
+    };
+
+    Ok(())
+}
+
+pub fn launch_webgui(db_info: &DatabaseInfo) {
+
+    println!("Launching native web gui of ArangoDB");
+
+    println!("To graphically edit your future topoly and create your flows between hosts,");
+    println!("after login, go to {} and activate \"Load full graph\" option.", "GRAPHS/all_my_hosts".bold().green());
+    println!("There you can create appropriate edges between hosts.");
+    println!("");
+    println!("Direct link to graph (login still required) :");
+    println!("{}",
+        format!("http://{}:{}/_db/karnaboo/_admin/aardvark/index.html#graphs-v2/all_my_hosts", db_info.arangodb_server_address, db_info.arangodb_server_port)
+            .bold()
+            .green()
+    );
+    println!("");
+    
+    thread::sleep(Duration::from_secs(1));
+
+    let _ = Command::new("xdg-open")
+        .arg(format!("http://{}:{}", db_info.arangodb_server_address, db_info.arangodb_server_port))
+        .spawn()
+        .expect("Unable to launch web gui of ArangoDB");
+}
 
 /* ============================================================================
 ========================== Types declarations =================================
