@@ -41,7 +41,7 @@ cargo build --release
 ```
 Now your executable **karnaboo-server** is in the `target/release` folder. You can grab the file, place it anywhere and juste execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder.
 
-*** Karnaboo agent ***
+### Karnaboo agent
 ```
 git clone https://gitlab.com/romzorus/karnaboo.git
 cd karnaboo/karnaboo-agent
