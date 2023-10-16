@@ -6,12 +6,7 @@ Streamline your update flows in open source environments !
 
 The goal of this tool is to let administrators regulate and streamline **in a centralized and visual way** the update flows of their GNU/Linux hosts across an infrastructure. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
 
-We wishfully hope that :
-- it might help someone somewhere someday,
-- maybe a sysadmin passing by could share ideas to improve this tool based on his actual experience,
-- a few contributors may be interested in helping and making this tool more reliable and more secure.
-
-## Principles
+## How does it work ?
 
 ### Different roles
 - "REPS" : REPatriation Server -> located in your DMZ and actually getting the updates from the official repositories
@@ -29,9 +24,9 @@ There are no packages yet so you have to build the tool yourself. However, Rust 
 
 ### Karnaboo server
 *** Prerequisites ***
-1. a functioning local [Rust installation](https://www.rust-lang.org/fr/tools/install)
-2. a functioning [ArangoDB instance](https://arangodb.com/download-major/)
-3. `# apt install build-essential pkg-config libssl-dev`
+1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
+2. a functional [ArangoDB instance](https://arangodb.com/download-major/)
+3. `apt install build-essential pkg-config libssl-dev`
 
 *** Building ***
 ```
@@ -43,7 +38,7 @@ Now your executable **karnaboo-server** is in the `target/release` folder. You c
 
 ### Karnaboo agent
 *** Prerequisites ***
-1. a functioning local [Rust installation](https://www.rust-lang.org/fr/tools/install)
+1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 
 *** Building ***
 ```
@@ -90,6 +85,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] add in the database an attribute to client/DISS/REPS to track the status of the host (script executed successfully, still in progress, failed)
 - [ ] introduce multi-threading for registration requests handling so that multiple hosts can send requests at the same time
 - [ ] introduce multi-threading for enforcement so that each thread can handle a host (sending instructions -> wait for return -> deal with return after)
+- [ ] add possibility to have clients directly handled by a REPS (small infrastructures without the need for DISS)
 
 *** Agent side ***
 - [ ] solution to execute the script while the agent is closed (apt-mirror can take several hours to finish...), and when the agent is opened again, it can continue the job where it left it
@@ -106,6 +102,11 @@ All the following distributions have been successfully tested as clients, DISS a
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
+
+We hope that :
+- it might help someone somewhere someday,
+- a sysadmin passing by could share ideas to improve this tool based on his actual experience,
+- contributors may be interested in helping and making this tool more reliable, more universal and more secure.
 
 ## Authors and acknowledgment
 TBD
