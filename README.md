@@ -31,7 +31,7 @@ There are no packages yet so you have to build the tool yourself. However, Rust 
 *** Prerequisites ***
 1. a functioning local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 2. a functioning [ArangoDB instance](https://arangodb.com/download-major/)
-3. `# apt install build-essential pkg-config libssl-dev``
+3. `# apt install build-essential pkg-config libssl-dev`
 
 *** Building ***
 ```
