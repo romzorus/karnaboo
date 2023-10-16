@@ -7,26 +7,35 @@ Streamline your update flows in open source environments !
 The goal of this tool is to let administrators regulate and streamline **in a centralized and visual way** the update flows of their GNU/Linux hosts across an infrastructure. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
 
 ## How does it work ?
+### Concept
+On each GNU/Linux host, you put the Karnaboo agent, ready to be executed with root privileges.
+Then each agent sends a registration request to the Karnaboo server which fills a graph database ([ArangoDB](https://arangodb.com/)) with host's informations.
+After the database is complete, you go from *what you have* (the nodes) to *what you want* (the edges) by creating
+links between hosts in the database. *This host will get its updates from this one now.*
+When your future topology is complete and consistent, you just tell the Karnaboo server to enforce it.
+The server sends specific instructions to each host depending on its position in the topology and the
+role it is supposed to play now. Each host abides and reports when the adaptation is over.
 
 ### Different roles
-- "REPS" : REPatriation Server -> located in your DMZ and actually getting the updates from the official repositories
-- "DISS" : DIStribution Server -> located in your LAN, close to your clients, getting the updates from the REPS and making it available for the clients
-- Client : local host requiring its updates
-
-### Where Karnaboo comes in
-The REPS, DISS and clients all have the Karnaboo agent installed.
-
-In parallel, you have a Karnaboo server with its database running somewhere (where it can be reached by all the agents).
-After registering each host in the database, the Karnaboo server will then tell each machine what to do (where to look for updates...etc) according to the topology you decided in the database.
+* Karnaboo server
+* Karnaboo agent :
+    - "REPS" (REPatriation Server) : located in your DMZ and actually getting the updates from the official repositories
+    - "DISS" (DIStribution Server) : located in your LAN, close to your clients, getting the updates from the REPS and making it available for the clients
+    - Client : local host requiring its updates (it can be a user terminal, a web server or anything else)
 
 ## Installation
+
+The tools themselves don't need to be *installed* indefinitely. The idea is to execute once, put everything in order, then leave your hosts alone. This isn't a supervision tool. Once they are correctly configured, your hosts leave their life on their own until you want to change everything again. In that case, you execute the server and the agents again.
+
+However, the content of the database remains after use. This allows you to re-enforce in case you need to replace a machine or something else changes. Also, you can make your topolgy evolve without starting from scratch again. You just start the server, start the agents and make them wait for instructions, change what you need to in the database, then enforce again.
+
 There are no packages yet so you have to build the tool yourself. However, Rust (Cargo) makes it really easy for us.
 
 ### Karnaboo server
 *** Prerequisites ***
 1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 2. a functional [ArangoDB instance](https://arangodb.com/download-major/)
-3. `apt install build-essential pkg-config libssl-dev`
+3. `sudo apt install build-essential pkg-config libssl-dev`
 
 *** Building ***
 ```
@@ -34,7 +43,7 @@ git clone https://gitlab.com/romzorus/karnaboo.git
 cd karnaboo/karnaboo-server
 cargo build --release
 ```
-Now your executable **karnaboo-server** is in the `target/release` folder. You can grab the file, place it anywhere and juste execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder.
+Now your executable **karnaboo-server** is in the `target/release` folder. You can grab the file, place it anywhere and just execute it with `./karnaboo-server` (the config/repo-sources.yml/script_bank.yml will need to be in the same folder though) or you can just stick to Rust and use `cargo run`in the `karnaboo/karnaboo-server` folder. **No need for root privileges.**
 
 ### Karnaboo agent
 *** Prerequisites ***
@@ -47,17 +56,16 @@ cd karnaboo/karnaboo-agent
 cargo build --release
 ```
 
-Now your executable **karnaboo-agent** is in the `target/release` folder. You can grab the file, place it anywhere and juste execute it with `./karnaboo-agent [arguments]` or you can just stick to Rust and use `cargo run -- [arguments]`in the `karnaboo/karnaboo-agent` folder.
+Now your executable **karnaboo-agent** is in the `target/release` folder. You can grab the file, place it anywhere and just execute it with `sudo ./karnaboo-agent [arguments]` or you can just stick to Rust and use `sudo cargo run -- [arguments]`in the `karnaboo/karnaboo-agent` folder. **Root privileges required.**
+
+If the architectures allow it, you can also build your agent on the Karnaboo server, push the resulting file (the agent) on the client host (ssh, USB key, any other way) and execute it there.
 
 ## Usage
-
-1. Fill the database with every host ("push" mode : the server listens while the agents send requests to be taken into account and to receive instructions according to the role they want to have and their position in the topology)
-2. Organize your update flows by linking nodes in the database
-3. Enforce your virtual structure through the server/agents
+TBD
 
 ## What is already working
 
-- direct interaction with the database : on karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
+- direct interaction with the database : on Karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
 - once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
 
@@ -90,6 +98,7 @@ All the following distributions have been successfully tested as clients, DISS a
 *** Agent side ***
 - [ ] solution to execute the script while the agent is closed (apt-mirror can take several hours to finish...), and when the agent is opened again, it can continue the job where it left it
 - [ ] solution for the agent to show output in realtime on the host (difference in std::process::Command between .spawn() and .output()...etc)
+- [ ] offer an option to make the agent wait for instructions without making it send a registratino request (in case an already registered host needs to evolve or just refresh its configuration after a bug)
 
 *** Others ***
 - [ ] reorganize the code in a proper way, split the big functions, gather functions in specific files, improve readability
