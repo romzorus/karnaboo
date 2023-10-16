@@ -17,11 +17,11 @@ pub fn help() {
     println!("--------||-------------||------------------------");
     println!("{}    °° Show this help message °° h | ?", "help".bold());
     println!(
-        "{}    °° Terminates silvadmin process °° ex | quit | q",
+        "{}    °° Terminates karnaboo server process °° ex | quit | q",
         "exit".bold()
     );
     println!(
-        "{}  °° Informations about the master server °° stat",
+        "{}  °° Informations about this karnaboo server °° stat",
         "status".bold()
     );
     println!(
@@ -33,12 +33,16 @@ pub fn help() {
         "dbbuild".bold()
     );
     println!(
-        "{}    °° Check the consistency of your database°° dbc",
-        "dbcheck".bold()
-    );
-    println!(
         "{}    °° Answer hosts requests to be handled °° ansreq | ar",
         "answer request".bold()
+    );
+    println!(
+        "{}    °° Launch native ArangoDB web GUI °° dbg",
+        "dbgui".bold()
+    );
+    println!(
+        "{}    °° Check the consistency of your database°° dbc",
+        "dbcheck".bold()
     );
     println!(
         "{}    °° Enforce what you decided in the database to all your hosts °° enf",
