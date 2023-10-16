@@ -23,7 +23,7 @@ fn main() {
 
     // Parsing configuration file
     let config_builder = Config::builder()
-        .add_source(File::new("../../config", FileFormat::Ini))
+        .add_source(File::new("config", FileFormat::Ini))
         .build()
         .unwrap();
     let user_config = config_builder

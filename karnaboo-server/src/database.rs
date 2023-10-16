@@ -550,7 +550,7 @@ pub async fn db_create_update_reps(db_info: &DatabaseInfo, host_info: NodeReps) 
 pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) -> Result<()> {
     // Parsing repositories ressource file
     let config_builder = Config::builder()
-        .add_source(File::new("../repo-sources.yml", FileFormat::Yaml))
+        .add_source(File::new("repo-sources.yml", FileFormat::Yaml))
         .build()
         .unwrap();
     let repo_source = config_builder.try_deserialize::<RepoSource>().unwrap();

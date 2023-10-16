@@ -235,7 +235,7 @@ pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key
 pub fn get_script_from_source_file(role: &str, os: &str) -> Result<Script, String> {
     // Opening the script bank
     let config_builder = Config::builder()
-        .add_source(File::new("../script_bank.yml", FileFormat::Yaml))
+        .add_source(File::new("script_bank.yml", FileFormat::Yaml))
         .build()
         .unwrap();
     let script_bank = config_builder.try_deserialize::<ScriptBank>().unwrap();
