@@ -1,6 +1,7 @@
 use colored::Colorize;
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use sysinfo::{DiskExt, System, SystemExt};
+use std::process::exit;
 
 pub fn get_local_system_conf() -> LocalSystemConfig {
     // Unique Host ID building
@@ -20,6 +21,12 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
         disks_info.push(disk.available_space() / 1_073_741_824); // Also converting bytes to gb (1 gb = 1 073 741 824 bytes)
     }
 
+    println!("Local config :");
+    println!("  - OS name : {}", sys.name().unwrap());
+    println!("  - OS version : {}", sys.os_version().unwrap());
+    println!("  - Hostname : {}", sys.host_name().unwrap());
+    println!("  - Host key : {}", builder.build("karnaboo").unwrap());
+
     // Fetch and return the required informations as a LocalSystemConfig struct
     LocalSystemConfig {
         osname: sys.name().unwrap(),
@@ -31,9 +38,9 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
 }
 
 // If you want this machine to become a DISS or REPS, it needs at least xxx gb of free space
-const MIN_FREE_SPACE_FOR_DISS_REPS: u64 = 3; // Unit : GB
+const MIN_FREE_SPACE_FOR_DISS_REPS: u64 = 5; // Unit : GB
 
-pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) -> bool {
+pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) {
     // For now, only the available space is watched
     // More criterias may come in the future
     let mut feasability = false;
@@ -70,7 +77,14 @@ pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) 
         println!("Unable to check feasability. Incorrect role value.");
     }
 
-    feasability
+    // After checking, final result
+    if feasability {
+        println!("Your system is compatible with your request.");
+    } else {
+        println!("The requirements are not met for your request.");
+        exit(1);
+    }
+
 }
 
 #[derive(Debug)]
