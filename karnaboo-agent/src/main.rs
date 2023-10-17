@@ -66,40 +66,24 @@ fn main() {
         // *********** 5. wait for reception confirmation
         // TBD eventually : for the time being, we assume every request is granted
 
-
-        println!("**** Waiting for instructions from the Karnaboo server ****");
-        let final_instructions: FinalInstructions = networking::get_instructions_from_server();
-
-
-        println!("**** Executing the final instructions ****");
-        let script_output = Command::new("sh")
-            .arg("-c")
-            .arg(format!("{}", final_instructions.script_content))
-            .output()
-            .expect("Wrong command");
-
-
-        println!("**** Execute the final instructions ****");
-        networking::send_exec_result_to_server(script_output, server_socket);
-
-    } else {
-        
-        println!("**** Waiting for instructions from the Karnaboo server ****");
-        let final_instructions: FinalInstructions = networking::get_instructions_from_server();
-
-
-        println!("**** Executing the final instructions ****");
-        let script_output = Command::new("sh")
-            .arg("-c")
-            .arg(format!("{}", final_instructions.script_content))
-            .output()
-            .expect("Wrong command");
-
-
-        println!("**** Execute the final instructions ****");
-        networking::send_exec_result_to_server(script_output, server_socket);
     }
+        
+    println!("**** Waiting for instructions from the Karnaboo server ****");
+    let final_instructions: FinalInstructions = networking::get_instructions_from_server();
+
+
+    println!("**** Executing the final instructions ****");
+    let script_output = Command::new("sh")
+        .arg("-c")
+        .arg(format!("{}", final_instructions.script_content))
+        .output()
+        .expect("Wrong command");
+
+
+    println!("**** Execute the final instructions ****");
+    networking::send_exec_result_to_server(script_output, server_socket);
 }
+
 
 #[derive(Deserialize, Debug)]
 pub struct FinalInstructions {
