@@ -1,15 +1,14 @@
 use colored::Colorize;
 use std::net::SocketAddr;
 
-pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr), ()> {
+pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr, bool), ()> {
     let mut role = String::with_capacity(6); // "client | reps | diss"
     let mut server = String::with_capacity(21); // "IP:port"
     let mut server_socket: SocketAddr = "0.0.0.0:0".parse().unwrap();
+    let mut wait_mode = false; // By default, we send a request first
 
     if args.len() > 1 {
-        // It would be easier to just state "args.len() == 5" meaning server address + role
-        // but the need for more arguments will probably emerge so it is written from the beginning
-        // to easily add more options later.
+
         let args_cloned = args.clone();
         for (i, _arg) in args_cloned.into_iter().enumerate() {
             // Looking for server and role arguments
@@ -47,27 +46,32 @@ pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr), (
             } else if ["-h", "--help"].contains(&args[i].as_str()) {
                 show_help_message();
                 break;
+            } else if ["-w", "--wait"].contains(&args[i].as_str()) {
+                wait_mode = true;
             }
         }
 
         // After parsing all the input, if either server or role argument is missing, abort
+        // The wait_mode is optionnal.
         if server.is_empty() || role.is_empty() {
             return Err(());
+        } else {
+            Ok((role, server_socket, wait_mode))
         }
 
-        Ok((role, server_socket))
-    } else {
+    } else { // Missing arguments
         return Err(());
     }
 }
 
 fn show_help_message() {
     println!("Please use the karnaboo agent as follows :");
-    println!(r"██████████████████████████████████████████████████████");
-    println!(r"████ karnaboo-agent -s [IP_server:port] -r [role] ████");
-    println!(r"██████████████████████████████████████████████████████");
+    println!(r"███████████████████████████████████████████████████████████");
+    println!(r"████ karnaboo-agent [-w] -s [IP_server:port] -r [role] ████");
+    println!(r"███████████████████████████████████████████████████████████");
     println!("  -s --server : server address and port");
     println!("  -r --role : role requested for this machine");
+    println!("  -w --wait : directly wait for instructions without sending request first");
     println!("");
     println!("Example :");
     println!("We want this machine to become a DISS. The karnaboo server");
