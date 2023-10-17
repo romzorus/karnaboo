@@ -58,6 +58,7 @@ list:
       - "4b340a5a0c5dd1f59bf122caa5a8761d" # Ubuntu 22.04
       - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
       - "1cbb0e9b35e9ccba858d547fb891ee0a" # Ubuntu 23.10
+      - "3ae9b9ff69a78d614864f1957778fecb" # Debian 12
     content: |
       mv /etc/apt/sources.list /etc/apt/sources.list.old
       cat /etc/apt/sources.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_DISS:3142/\\g\" | sed \"s\\https://\\https://$IP_DISS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
@@ -69,6 +70,7 @@ list:
       - "4b340a5a0c5dd1f59bf122caa5a8761d" # Ubuntu 22.04
       - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
       - "1cbb0e9b35e9ccba858d547fb891ee0a" # Ubuntu 23.10
+      - "3ae9b9ff69a78d614864f1957778fecb" # Debian 12
     content: |
       mv /etc/apt/sources.list /etc/apt/sources.list.old
       cat /etc/apt/sources.list.old | grep -v \'^#\' | grep . | sed \"s\\http://\\http://$IP_REPS:3142/\\g\" | sed \"s\\https://\\https://$IP_REPS:3142/\\g\" > /etc/apt/sources.list.d/karnaboo.list
@@ -85,5 +87,6 @@ list:
       - "4b340a5a0c5dd1f59bf122caa5a8761d" # Ubuntu 22.04
       - "378a77e6b2543c4a08c9ef94bfa344d2" # Ubuntu 23.04
       - "1cbb0e9b35e9ccba858d547fb891ee0a" # Ubuntu 23.10
+      - "3ae9b9ff69a78d614864f1957778fecb" # Debian 12
     content: |
       DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
