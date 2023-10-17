@@ -36,6 +36,7 @@ There are no packages yet so you have to build the tool yourself. However, Rust 
 1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 2. a functional [ArangoDB instance](https://arangodb.com/download-major/)
 3. `sudo apt install build-essential pkg-config libssl-dev`
+4. TCP ports 9015 and 9016 opened
 
 *** Building ***
 ```
@@ -48,6 +49,7 @@ Now your executable **karnaboo-server** is in the `target/release` folder. You c
 ### Karnaboo agent
 *** Prerequisites ***
 1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
+2. TCP port 9017 opened
 
 *** Building ***
 ```
@@ -78,6 +80,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - Ubuntu 23.04 (Desktop and Server)
 - Ubuntu 23.10 (Desktop and Server)
 - Debian 12
+- CentOS Stream 9
 
 ## TO-DO list
 (not in order of priority)
@@ -110,6 +113,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
 - [ ] create installation script / packaging .deb and more
 - [ ] add a little security in the communication protocol by using ip filtering (and expiring tokens issued by the agents for the server ?)
+- [ ] CentOS compatibility : stop the fastestmirror process and reduce the repositories list to only a few, otherwise the packages are downloaded again when the fastest mirror changes
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.

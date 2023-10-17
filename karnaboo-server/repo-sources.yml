@@ -116,3 +116,10 @@ list:
       - "deb http://security.ubuntu.com/ubuntu/ mantic-security main restricted"
       - "deb http://security.ubuntu.com/ubuntu/ mantic-security universe"
       - "deb http://security.ubuntu.com/ubuntu/ mantic-security multiverse"
+
+  - os:
+    _key: "53dbf8829e09b0e706cdb36a1099a116"
+    osname: "CentOS Stream"
+    osversion: "9"
+    repositories:
+      - "Not applicable at the moment"
