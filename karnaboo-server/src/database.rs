@@ -905,8 +905,9 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
     
     thread::sleep(Duration::from_secs(1));
 
-    let _ = Command::new("xdg-open")
-        .arg(format!("http://{}:{}", db_info.arangodb_server_address, db_info.arangodb_server_port))
+    let _ = Command::new("sh")
+        .arg("-c")
+        .arg(format!("xdg-open http://{}:{} 2> /dev/null", db_info.arangodb_server_address, db_info.arangodb_server_port))
         .spawn()
         .expect("Unable to launch web gui of ArangoDB");
 }
