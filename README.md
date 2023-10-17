@@ -69,7 +69,7 @@ TBD
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
 - once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
 
-### Compatible distributions (as of 16/10/2023)
+### Compatible distributions (as of 17/10/2023)
 
 All the following distributions have been successfully tested as clients, DISS and REPS :
 
@@ -77,6 +77,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - Ubuntu 22.04 (Desktop and Server)
 - Ubuntu 23.04 (Desktop and Server)
 - Ubuntu 23.10 (Desktop and Server)
+- Debian 12
 
 ## TO-DO list
 (not in order of priority)
@@ -98,7 +99,7 @@ All the following distributions have been successfully tested as clients, DISS a
 *** Agent side ***
 - [ ] solution to execute the script while the agent is closed (apt-mirror can take several hours to finish...), and when the agent is opened again, it can continue the job where it left it
 - [ ] solution for the agent to show output in realtime on the host (difference in std::process::Command between .spawn() and .output()...etc)
-- [ ] offer an option to make the agent wait for instructions without making it send a registratino request (in case an already registered host needs to evolve or just refresh its configuration after a bug)
+
 
 *** Others ***
 - [ ] reorganize the code in a proper way, split the big functions, gather functions in specific files, improve readability
@@ -108,6 +109,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] encrypt communications
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
 - [ ] create installation script / packaging .deb and more
+- [ ] add a little security in the communication protocol by using ip filtering (and expiring tokens issued by the agents for the server ?)
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
