@@ -7,6 +7,9 @@ Streamline your update flows in open source environments !
 The goal of this tool is to let administrators regulate and streamline **in a centralized and visual way** the update flows of their GNU/Linux hosts across an infrastructure. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
 
 ## How does it work ?
+
+[Here is a video for you !](https://www.youtube.com/watch?v=QUFpegW3hGQ)
+
 ### Concept
 On each GNU/Linux host, you put the Karnaboo agent, ready to be executed with root privileges.
 Then each agent sends a registration request to the Karnaboo server which fills a graph database ([ArangoDB](https://arangodb.com/)) with host's informations.
