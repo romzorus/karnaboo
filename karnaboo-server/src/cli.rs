@@ -28,7 +28,9 @@ use std::time::Duration;
 pub async fn thread_cli(
     db_info: DatabaseInfo,
     waiting_requests_buffer_cli: Arc<Mutex<Vec<database::NodeHostRequest>>>,
-    networking_info: Networking
+    networking_info: Networking,
+    repo_sources_path: String,
+    script_bank_path: String
 ) -> Result<()> {
     std::thread::sleep(Duration::from_secs(1));
 
@@ -91,7 +93,7 @@ pub async fn thread_cli(
             database::launch_webgui(&db_info);
         } else if ["answer request", "ansreq", "ar"].contains(&user_command_str) {
             let return_answer_request =
-                database::answer_requests(&waiting_requests_buffer_cli, &db_info);
+                database::answer_requests(&waiting_requests_buffer_cli, &db_info, &repo_sources_path, &script_bank_path);
             let _ = return_answer_request.await;
         } else if ["enforce", "enf"].contains(&user_command_str) {
             let return_enforce = enforce::enforce(&db_info, &networking_info);
