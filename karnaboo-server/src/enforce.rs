@@ -232,10 +232,10 @@ pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key
 // This function takes an os (md5 hash taken from repo-sources.yml)
 // and a role and returns the appropriate script as a String
 // to enforce this role to this os
-pub fn get_script_from_source_file(role: &str, os: &str) -> Result<Script, String> {
+pub fn get_script_from_source_file(role: &str, os: &str, script_bank_path: &String) -> Result<Script, String> {
     // Opening the script bank
     let config_builder = Config::builder()
-        .add_source(File::new("script_bank.yml", FileFormat::Yaml))
+        .add_source(File::new(script_bank_path.as_str(), FileFormat::Yaml))
         .build()
         .unwrap();
     let script_bank = config_builder.try_deserialize::<ScriptBank>().unwrap();

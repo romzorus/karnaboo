@@ -104,6 +104,8 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
 pub async fn answer_requests(
     waiting_requests: &Arc<Mutex<Vec<NodeHostRequest>>>,
     db_info: &DatabaseInfo,
+    repo_sources_path: &String,
+    script_bank_path: &String
 ) {
     let mut waiting_requests_contents = waiting_requests.lock().await;
     let total_number = &waiting_requests_contents.len();
@@ -143,7 +145,7 @@ pub async fn answer_requests(
                     let return_db_client_creation = db_create_update_client(&db_info, &host_info);
                     let _ = return_db_client_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -170,7 +172,7 @@ pub async fn answer_requests(
                     let return_db_diss_creation = db_create_update_diss(&db_info, host_info);
                     let _ = return_db_diss_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -196,7 +198,7 @@ pub async fn answer_requests(
                     let return_db_reps_creation = db_create_update_reps(&db_info, host_info);
                     let _ = return_db_reps_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os);
+                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -552,10 +554,10 @@ pub async fn db_create_update_reps(db_info: &DatabaseInfo, host_info: NodeReps) 
     Ok(())
 }
 
-pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) -> Result<()> {
+pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest, repo_sources_path: &String, script_bank_path: &String) -> Result<()> {
     // Parsing repositories ressource file
     let config_builder = Config::builder()
-        .add_source(File::new("repo-sources.yml", FileFormat::Yaml))
+        .add_source(File::new(repo_sources_path, FileFormat::Yaml))
         .build()
         .unwrap();
     let repo_source = config_builder.try_deserialize::<RepoSource>().unwrap();
@@ -682,7 +684,7 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
 
     // Creation of scripts associated to the os
 
-    let _ = db_create_update_script(db_info, host_os._key.clone()).await;
+    let _ = db_create_update_script(db_info, host_os._key.clone(), script_bank_path).await;
 
     // Create/update the link between client and OS
     // OS : host_os._key
@@ -731,7 +733,7 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest) 
     Ok(())
 }
 
-pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Result<()> {
+pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_bank_path: &String) -> Result<()> {
 
     let db_connection = Connection::establish_basic_auth(
         format!(
@@ -749,7 +751,7 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String) -> Resu
 
     // Creation of script documents and associated edges (script --> os) in database
     for role in ["client", "diss", "reps"] {
-        match get_script_from_source_file(role, os.as_str()) {
+        match get_script_from_source_file(role, os.as_str(), script_bank_path) {
             Ok(script) => {
                 // The os compatible list has to look like an array ["hash 1", "hash 2"] so a little formatting
                 // is needed before sending the AQL query.
@@ -949,27 +951,6 @@ pub struct NodeOs {
     pub version: String,
 }
 
-pub struct EgdeDissCompatibleWith {
-    pub diss: NodeDiss,
-    pub os: NodeOs,
-}
-pub struct EdgeHandles {
-    pub diss: NodeDiss,
-    pub client: NodeClient,
-}
-pub struct EdgeRedistributesTo {
-    pub reps: NodeReps,
-    pub diss: NodeDiss,
-}
-pub struct EdgeRepsCompatibleWith {
-    pub reps: NodeReps,
-    pub os: NodeOs,
-}
-pub struct EdgeUsesOs {
-    pub client: NodeClient,
-    pub os: NodeOs,
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum NodeHostRequest {
     Client(NodeClient),
@@ -990,3 +971,26 @@ struct Os {
     repositories: Vec<String>,
 }
 
+/* Unused for the moment
+
+pub struct EgdeDissCompatibleWith {
+    pub diss: NodeDiss,
+    pub os: NodeOs,
+}
+pub struct EdgeHandles {
+    pub diss: NodeDiss,
+    pub client: NodeClient,
+}
+pub struct EdgeRedistributesTo {
+    pub reps: NodeReps,
+    pub diss: NodeDiss,
+}
+pub struct EdgeRepsCompatibleWith {
+    pub reps: NodeReps,
+    pub os: NodeOs,
+}
+pub struct EdgeUsesOs {
+    pub client: NodeClient,
+    pub os: NodeOs,
+}
+*/
