@@ -7,6 +7,87 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 use serde::Deserialize;
+use std::path::Path;
+use std::process::exit;
+
+pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
+    // Initialization of arguments
+    // By default, all files are considered to be in a "config" folder located beside the executable.
+    let mut user_arguments = UserArguments {
+        config_file_path: "./config/karnaboo.conf".to_string(),
+        repo_sources_path: "./config/repo-sources.yml".to_string(),
+        script_bank_path: "./config/script_bank.yml".to_string(),
+    };
+
+    let tmp_args = args.clone();
+
+    for (i, _arg) in tmp_args.into_iter().enumerate() {
+        
+        if ["-c", "--config", "--configuration"].contains(&args[i].as_str()) {
+            // Looking for config file path
+            // There needs to be a following argument...
+            if args.len() >= (i + 2) {
+                // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
+                user_arguments.config_file_path = args[i + 1].clone();
+
+            } else {
+                // ... otherwise :
+                show_command_help_message();
+                break;
+            }
+        } else if ["-s", "--script"].contains(&args[i].as_str()) {
+            // Looking for script bank file path
+            // There needs to be a following argument...
+            if args.len() >= (i + 2) {
+                // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
+                user_arguments.script_bank_path = args[i + 1].clone().to_lowercase();
+            } else {
+                show_command_help_message();
+                break;
+            }
+        } else if ["-r", "--repo"].contains(&args[i].as_str()) {
+            // Looking for repositories file path
+            // There needs to be a following argument...
+            if args.len() >= (i + 2) {
+                // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
+                user_arguments.repo_sources_path = args[i + 1].clone().to_lowercase();
+            } else {
+                show_command_help_message();
+                break;
+            }
+        } else if ["-h", "--help"].contains(&args[i].as_str()) {
+            show_command_help_message();
+            break;
+        }
+    }
+
+    user_arguments
+}
+
+pub fn check_user_arguments(user_arguments: &UserArguments) {
+    if !Path::new(&user_arguments.config_file_path).exists() {
+        println!("Configuration file not found at {}. Abort.", user_arguments.config_file_path);
+        exit(1);
+    } else if !Path::new(&user_arguments.repo_sources_path).exists() {
+        println!("Repositories file not found at {}. Abort.", user_arguments.repo_sources_path);
+        exit(1);
+    } else if !Path::new(&user_arguments.script_bank_path).exists() {
+        println!("Script bank file not found at {}. Abort.", user_arguments.script_bank_path);
+        exit(1);
+    }
+}
+
+fn show_command_help_message() {
+    println!("Wrong command");
+    // Add some helping about the right way to enter arguments
+}
+
+pub struct UserArguments {
+    pub config_file_path: String,
+    pub repo_sources_path: String,
+    pub script_bank_path: String,
+}
+
 
 #[derive(Deserialize, Clone)]
 pub struct UserConfig {
