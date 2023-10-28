@@ -45,7 +45,7 @@ list:
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"Proxy: http://$IP_REPS:3142\" >> /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "d909df38b28abe8e436b56d219a26545"
@@ -56,7 +56,8 @@ list:
       DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
       echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
-      systemctl reboot
+      systemctl restart apt-cacher-ng.service
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "16e1ff6dfd8b19c4c7d4eb55f3a4152a"
@@ -87,7 +88,7 @@ list:
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"Proxy: http://$IP_REPS:3142\" >> /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "ec6394fbb6161fa2f8aa2e897fc3a400"
@@ -100,13 +101,15 @@ list:
       DEBIAN_FRONTEND=noninteractive apt install -y apt-cacher-ng
       echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
-      systemctl reboot
+      systemctl restart apt-cacher-ng.service
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "f6598cc0bfcb76e5597e50d9a319fef6"
     role: "client"
     compatible_with:
       - "53dbf8829e09b0e706cdb36a1099a116" # CentOS Stream 9
+      - "f733c65385f72716dc82ebff46474e72" # Oracle Linux Server 9.2
     content: |
       echo \"proxy=http://$IP_DISS:3142\" >> /etc/dnf/dnf.conf
 
@@ -123,9 +126,8 @@ list:
       echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"Proxy: http://$IP_REPS:3142\" >> /etc/apt-cacher-ng/acng.conf
-      systemctl enable apt-cacher-ng.service
       systemctl start apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "ee5a8caf8a996c07ea94a6ff770a4d4a"
@@ -138,9 +140,8 @@ list:
       firewall-cmd --reload
       echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
-      systemctl enable apt-cacher-ng.service
       systemctl start apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "92cba19d202057fb8c4d6f519fdede5e"
@@ -159,7 +160,7 @@ list:
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"Proxy: http://$IP_REPS:3142\" >> /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
 
   - script:
     _key: "c12a2f520934c46b67317c5bc0f4452a"
@@ -173,4 +174,36 @@ list:
       echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
       echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
       systemctl restart apt-cacher-ng.service
-      systemctl reboot
+      systemctl enable apt-cacher-ng.service
+      
+  - script:
+    _key: "c09b08adcce11721a940791dadc1d32e"
+    role: "diss"
+    compatible_with:
+      - "f733c65385f72716dc82ebff46474e72" # Oracle Linux Server 9.2
+    content: |
+      echo \"proxy=http://$IP_REPS:3142\" >> /etc/dnf/dnf.conf
+      dnf install --allowerasing -y epel-release
+      dnf install --allowerasing -y apt-cacher-ng
+      firewall-cmd --permanent --add-port=3142/tcp
+      firewall-cmd --reload
+      echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
+      echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
+      echo \"Proxy: http://$IP_REPS:3142\" >> /etc/apt-cacher-ng/acng.conf
+      systemctl start apt-cacher-ng.service
+      systemctl enable apt-cacher-ng.service
+
+  - script:
+    _key: "58ea5a9fb520667da711d000079e43a2"
+    role: "reps"
+    compatible_with:
+      - "f733c65385f72716dc82ebff46474e72" # Oracle Linux Server 9.2
+    content: |
+      dnf install --allowerasing -y epel-release
+      dnf install --allowerasing -y apt-cacher-ng
+      firewall-cmd --permanent --add-port=3142/tcp
+      firewall-cmd --reload
+      echo \"PassThroughPattern: ^(.*):443$\" >> /etc/apt-cacher-ng/acng.conf
+      echo \"VfilePatternEx: ^(/\\?release[0-9]+&arch.*|.*/RPM-GPG-KEY-examplevendor)$\" >> /etc/apt-cacher-ng/acng.conf
+      systemctl start apt-cacher-ng.service
+      systemctl enable apt-cacher-ng.service

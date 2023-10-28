@@ -37,7 +37,9 @@ To easily test the Karnaboo server, install [Docker](https://docs.docker.com/get
 3. Check that tcp ports 9015 and 9016 are not blocked by your firewall (depends on your distribution)
 4. Run the Karnaboo server
 `docker run --net karnaboo-network --ip 172.10.0.51 -ti -p 9015:9015 -p 9016:9016 romzorus/karnaboo`
-5. To graphically access the database when it is time to connect your nodes, open this URL in your browser : [http://127.0.0.1:8529](http://127.0.0.1:8529)
+5. To graphically access the database when it is time to connect your nodes, open this URL in your browser [http://127.0.0.1:8529](http://127.0.0.1:8529) and use the following credentials :
+    login : `root`
+    password : `arangodb`
 
 As for the agent, you still have to build and execute it on a host. There is no point in running an agent inside a container. It won't have all the necessary data and it won't act on the host accordingly.
 
@@ -89,7 +91,7 @@ TBD
 - after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
 - once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
 
-### Compatible distributions (as of 17/10/2023)
+### Compatible distributions (as of 28/10/2023)
 
 All the following distributions have been successfully tested as clients, DISS and REPS :
 
@@ -99,6 +101,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - Ubuntu 23.10 (Desktop and Server)
 - Debian 12
 - CentOS Stream 9
+- Oracle Linux Server R9.2
 
 ## TO-DO list
 (not in order of priority)
@@ -115,9 +118,9 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] introduce multi-threading for registration requests handling so that multiple hosts can send requests at the same time
 - [ ] introduce multi-threading for enforcement so that each thread can handle a host (sending instructions -> wait for return -> deal with return after)
 - [ ] add possibility to have clients directly handled by a REPS (small infrastructures without the need for DISS)
+- [ ] CentOS/Oracle Linux compatibility : stop the fastestmirror process and reduce the repositories list to only a few, otherwise the packages are downloaded again when the fastest mirror changes
 
 *** Agent side ***
-- [ ] solution to execute the script while the agent is closed (apt-mirror can take several hours to finish...), and when the agent is opened again, it can continue the job where it left it
 - [ ] solution for the agent to show output in realtime on the host (difference in std::process::Command between .spawn() and .output()...etc)
 
 
@@ -130,7 +133,6 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
 - [ ] create installation script / packaging .deb and more
 - [ ] add a little security in the communication protocol by using ip filtering (and expiring tokens issued by the agents for the server ?)
-- [ ] CentOS compatibility : stop the fastestmirror process and reduce the repositories list to only a few, otherwise the packages are downloaded again when the fastest mirror changes
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.

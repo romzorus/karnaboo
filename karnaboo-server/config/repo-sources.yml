@@ -122,4 +122,11 @@ list:
     osname: "CentOS Stream"
     osversion: "9"
     repositories:
-      - "Not applicable at the moment"
+      - "Not applicable at the moment (fastest mirror)"
+      
+  - os:
+    _key: "f733c65385f72716dc82ebff46474e72"
+    osname: "Oracle Linux Server"
+    osversion: "9.2"
+    repositories:
+      - "Not applicable at the moment (fastest mirror)"
