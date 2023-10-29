@@ -2,6 +2,7 @@ use colored::Colorize;
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use sysinfo::{DiskExt, System, SystemExt};
 use std::process::exit;
+use sudo::check;
 
 pub fn get_local_system_conf() -> LocalSystemConfig {
     // Unique Host ID building
@@ -41,19 +42,36 @@ pub fn get_local_system_conf() -> LocalSystemConfig {
 const MIN_FREE_SPACE_FOR_DISS_REPS: u64 = 5; // Unit : GB
 
 pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) {
-    // For now, only the available space is watched
-    // More criterias may come in the future
-    let mut feasability = false;
+
+    // Checking sufficient privileges for executing the following tasks
+    let mut sufficient_privileges = false;
+    match sudo::check() {
+        sudo::RunningAs::Root => {
+            sufficient_privileges = true;
+        }
+        sudo::RunningAs::User => {
+            println!(
+                "{}",
+                "Not enough privileges. Please run this command again with root privileges."
+                    .bold()
+                    .red()
+            );
+        }
+        sudo::RunningAs::Suid => {
+            println!("What is sudo::RunningAs::Suid : {:?}", sudo::RunningAs::Suid);
+        }
+    }
 
     // Checking that available space is enough for the DISS and REPS roles
+    let mut enough_space = false;
     let disks_infos = local_conf.disks_infos.clone();
     if ["diss", "reps"].contains(&role.as_str()) {
         for free_space in disks_infos.into_iter() {
             if free_space >= MIN_FREE_SPACE_FOR_DISS_REPS {
-                feasability = true;
+                enough_space = true;
             }
         }
-        if !feasability {
+        if !enough_space {
             println!(
                 "{}",
                 format!("Not enough available space for the {} role.", role)
@@ -72,13 +90,13 @@ pub fn check_request_feasability(role: &String, local_conf: &LocalSystemConfig) 
         }
     } else if role == "client" {
         // No criteria to check for client role at the moment
-        feasability = true;
+        enough_space = true;
     } else {
         println!("Unable to check feasability. Incorrect role value.");
     }
 
     // After checking, final result
-    if feasability {
+    if enough_space && sufficient_privileges {
         println!("Your system is compatible with your request.");
     } else {
         println!("The requirements are not met for your request.");
