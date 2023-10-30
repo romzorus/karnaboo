@@ -10,7 +10,7 @@ The goal of this tool is to let administrators regulate and streamline **in a ce
 
 ### Concept
 
-![Overall principle](/images/overall_principle.png)
+![Overall principle](/images/overall_principle.png){width=75%}
 
 On each GNU/Linux host, you put the Karnaboo agent, ready to be executed with root privileges.
 Then each agent sends a registration request to the Karnaboo server which fills a graph database ([ArangoDB](https://arangodb.com/)) with host's informations.
@@ -20,9 +20,7 @@ When your future topology is complete and consistent, you just tell the Karnaboo
 The server sends specific instructions to each host depending on its position in the topology and the
 role it is supposed to play now. Each host abides and reports when the adaptation is over.
 
-<figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/QUFpegW3hGQ?si=lK_pcbNobEnZt0la" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
+![Video demonstration](images/presentation_video.mov)
 
 ### Different roles
 * **Karnaboo server**
