@@ -8,8 +8,6 @@ The goal of this tool is to let administrators regulate and streamline **in a ce
 
 ## How does it work ?
 
-[Here is a video for you !](https://www.youtube.com/watch?v=QUFpegW3hGQ)
-
 ### Concept
 
 ![Overall principle](/images/overall_principle.png)
@@ -41,23 +39,26 @@ To easily run the Karnaboo server, install [Docker](https://docs.docker.com/get-
 
 Download the `docker-compose.yml` file at the root of this repository, then :
 ```shell
-docker-compose up -d arangodb 
+# Check that tcp ports 9015 and 9016 are not blocked by your firewall
+### (depends on your distribution)
+
+docker-compose up -d arangodb
 docker-compose run --rm karnaboo
 ```
 
 ### Without docker-compose
 
 ```shell
-#Create an internal docker network to allow Karnaboo and ArangoDB to communicate
+# Create an internal docker network to allow Karnaboo and ArangoDB to communicate
 docker network create --subnet=172.10.0.0/24 karnaboo-network
 
-#Run ArangoDB
+# Run ArangoDB
 docker run --net karnaboo-network --ip 172.10.0.50 -e ARANGO_ROOT_PASSWORD=arangodb -p 8529:8529 -d arangodb
 
-#Check that tcp ports 9015 and 9016 are not blocked by your firewall
+# Check that tcp ports 9015 and 9016 are not blocked by your firewall
 ### (depends on your distribution)
 
-#Run the Karnaboo server
+# Run the Karnaboo server
 docker run --net karnaboo-network --ip 172.10.0.51 -ti -p 9015:9015 -p 9016:9016 romzorus/karnaboo
 ```
 To graphically access the database when it is time to connect your nodes, open this URL in your browser [http://127.0.0.1:8529](http://127.0.0.1:8529) and use the following credentials :
