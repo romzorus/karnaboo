@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+  arangodb:
+    image: arangodb
+    ports:
+      - 8529:8529
+    networks:
+      karnaboo-network:
+        ipv4_address: 172.10.0.50
+    environment:
+      - ARANGO_ROOT_PASSWORD=arangodb
+  
+  karnaboo:
+    image: romzorus/karnaboo
+    ports:
+      - 9015:9015
+      - 9016:9016
+    networks:
+      karnaboo-network:
+        ipv4_address: 172.10.0.51
+    depends_on:
+      - arangodb
+
+networks:
+  karnaboo-network:
+    ipam:
+      config:
+        - subnet: 172.10.0.0/24

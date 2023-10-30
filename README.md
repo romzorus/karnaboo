@@ -28,22 +28,39 @@ role it is supposed to play now. Each host abides and reports when the adaptatio
 
 ## Quickly try it with Docker
 
-To easily test the Karnaboo server, install [Docker](https://docs.docker.com/get-docker/) then follow these steps :
+To easily run the Karnaboo server, install [Docker](https://docs.docker.com/get-docker/) then follow these steps :
 
-1. Create an internal docker network to allow Karnaboo and ArangoDB to communicate
-`docker network create --subnet=172.10.0.0/24 karnaboo-network`
-2. Run ArangoDB
-`docker run --net karnaboo-network --ip 172.10.0.50 -e ARANGO_ROOT_PASSWORD=arangodb -p 8529:8529 -d arangodb`
-3. Check that tcp ports 9015 and 9016 are not blocked by your firewall (depends on your distribution)
-4. Run the Karnaboo server
-`docker run --net karnaboo-network --ip 172.10.0.51 -ti -p 9015:9015 -p 9016:9016 romzorus/karnaboo`
-5. To graphically access the database when it is time to connect your nodes, open this URL in your browser [http://127.0.0.1:8529](http://127.0.0.1:8529) and use the following credentials :
+### With docker-compose
+
+Download the `docker-compose.yml` at the root of this repository, then :
+```shell
+docker-compose up -d arangodb 
+docker-compose run --rm karnaboo
+```
+
+### Without docker-compose
+
+```shell
+#Create an internal docker network to allow Karnaboo and ArangoDB to communicate
+docker network create --subnet=172.10.0.0/24 karnaboo-network
+
+#Run ArangoDB
+docker run --net karnaboo-network --ip 172.10.0.50 -e ARANGO_ROOT_PASSWORD=arangodb -p 8529:8529 -d arangodb
+
+#Check that tcp ports 9015 and 9016 are not blocked by your firewall
+### (depends on your distribution)
+
+#Run the Karnaboo server
+docker run --net karnaboo-network --ip 172.10.0.51 -ti -p 9015:9015 -p 9016:9016 romzorus/karnaboo
+```
+To graphically access the database when it is time to connect your nodes, open this URL in your browser [http://127.0.0.1:8529](http://127.0.0.1:8529) and use the following credentials :
     login : `root`
     password : `arangodb`
 
-As for the agent, you still have to build and execute it on a host. There is no point in running an agent inside a container. It won't have all the necessary data and it won't act on the host accordingly.
+### Remark
+As for the agent, you still have to build it and execute it on a host. There is no point in running an agent inside a container. It won't have all the necessary data and it won't act on the host accordingly.
 
-## Installation
+## Building
 
 The tools themselves don't need to be *installed* indefinitely. The idea is to execute once, put everything in order, then leave your hosts alone. This isn't a supervision tool. Once they are correctly configured, your hosts leave their life on their own until you want to change everything again. In that case, you execute the server and the agents again.
 
@@ -55,11 +72,11 @@ There are no packages yet so you have to build the tool yourself. However, Rust 
 *** Prerequisites ***
 1. a functional local [Rust installation](https://www.rust-lang.org/fr/tools/install)
 2. a functional [ArangoDB instance](https://arangodb.com/download-major/)
-3. `sudo apt install build-essential pkg-config libssl-dev`
+3. packages `build-essential pkg-config libssl-dev` for Ubuntu
 4. TCP ports 9015 and 9016 opened
 
 *** Building ***
-```
+```shell
 git clone https://gitlab.com/romzorus/karnaboo.git
 cd karnaboo/karnaboo-server
 cargo build --release
@@ -72,7 +89,7 @@ Now your executable **karnaboo-server** is in the `target/release` folder. You c
 2. TCP port 9017 opened
 
 *** Building ***
-```
+```shell
 git clone https://gitlab.com/romzorus/karnaboo.git
 cd karnaboo/karnaboo-agent
 cargo build --release
