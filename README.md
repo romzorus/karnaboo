@@ -11,6 +11,9 @@ The goal of this tool is to let administrators regulate and streamline **in a ce
 [Here is a video for you !](https://www.youtube.com/watch?v=QUFpegW3hGQ)
 
 ### Concept
+
+![Overall principle](/images/global_principle.png)
+
 On each GNU/Linux host, you put the Karnaboo agent, ready to be executed with root privileges.
 Then each agent sends a registration request to the Karnaboo server which fills a graph database ([ArangoDB](https://arangodb.com/)) with host's informations.
 After the database is complete, you go from *what you have* (the nodes) to *what you want* (the edges) by creating
@@ -18,6 +21,10 @@ links between hosts in the database. *This host will get its updates from this o
 When your future topology is complete and consistent, you just tell the Karnaboo server to enforce it.
 The server sends specific instructions to each host depending on its position in the topology and the
 role it is supposed to play now. Each host abides and reports when the adaptation is over.
+
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/QUFpegW3hGQ?si=lK_pcbNobEnZt0la" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
 
 ### Different roles
 * **Karnaboo server**
@@ -32,7 +39,7 @@ To easily run the Karnaboo server, install [Docker](https://docs.docker.com/get-
 
 ### With docker-compose
 
-Download the `docker-compose.yml` at the root of this repository, then :
+Download the `docker-compose.yml` file at the root of this repository, then :
 ```shell
 docker-compose up -d arangodb 
 docker-compose run --rm karnaboo
