@@ -12,7 +12,7 @@ The goal of this tool is to let administrators regulate and streamline **in a ce
 
 ### Concept
 
-![Overall principle](/images/global_principle.png)
+![Overall principle](/images/overall_principle.png)
 
 On each GNU/Linux host, you put the Karnaboo agent, ready to be executed with root privileges.
 Then each agent sends a registration request to the Karnaboo server which fills a graph database ([ArangoDB](https://arangodb.com/)) with host's informations.
