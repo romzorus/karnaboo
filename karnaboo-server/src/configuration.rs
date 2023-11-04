@@ -10,6 +10,8 @@ use serde::Deserialize;
 use std::path::Path;
 use std::process::exit;
 
+use crate::commands::show_command_help_message;
+
 pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
     // Initialization of arguments
     // By default, all files are considered to be in a "config" folder located beside the executable.
@@ -77,10 +79,6 @@ pub fn check_user_arguments(user_arguments: &UserArguments) {
     }
 }
 
-fn show_command_help_message() {
-    println!("Wrong command");
-    // Add some helping about the right way to enter arguments
-}
 
 pub struct UserArguments {
     pub config_file_path: String,
