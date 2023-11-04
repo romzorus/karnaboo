@@ -142,7 +142,6 @@ All the following distributions have been successfully tested as clients, DISS a
 
 
 *** Others ***
-- [ ] reorganize the code in a proper way, split the big functions, gather functions in specific files, improve readability
 - [ ] comment the code
 - [ ] begin user documentation
 - [ ] encrypt communications
