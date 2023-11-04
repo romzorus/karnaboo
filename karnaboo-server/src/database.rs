@@ -16,10 +16,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{sync::Arc, thread, time::Duration};
 use std::process::Command;
+use std::io::{stdout, Write};
 
-use crate::commands::yes_or_no_question;
+
 use crate::configuration::DatabaseInfo;
-use crate::enforce::get_script_from_source_file;
 
 // Let the user directly interact with the database via AQL queries ("AQL mode").
 // With AQL queries, the user is limited and cannot create or delete database or collections.
@@ -36,7 +36,7 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
     .await
     .unwrap();
 
-    let db = db_connection.db(&db_info.db_name).await.unwrap();
+    let db_connector = db_connection.db(&db_info.db_name).await.unwrap();
 
     println!(
         "{}",
@@ -81,7 +81,7 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
         } else {
             // Send command to database
 
-            let _result_command: Vec<serde_json::Value> = match db.aql_str(user_input_str).await {
+            let _result_command: Vec<serde_json::Value> = match db_connector.aql_str(user_input_str).await {
                 Ok(content) => {
                     println!("Database return");
                     println!("{:?}", content);
@@ -914,6 +914,60 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
         .expect("Unable to launch web gui of ArangoDB");
 }
 
+// This function is used to fulfill the database.
+// This function takes an os (md5 hash taken from repo-sources.yml)
+// and a role and returns the appropriate script as a String
+// to enforce this role to this os
+fn get_script_from_source_file(role: &str, os: &str, script_bank_path: &String) -> std::result::Result<Script, String> {
+    // Opening the script bank
+    let config_builder = Config::builder()
+        .add_source(File::new(script_bank_path.as_str(), FileFormat::Yaml))
+        .build()
+        .unwrap();
+    let script_bank = config_builder.try_deserialize::<ScriptBank>().unwrap();
+
+    for script in script_bank.list.into_iter() {
+        if (script.role == role) && script.compatible_with.contains(&os.to_string()) {
+            return Ok(script);
+        }
+    }
+    Err("No compatible script found !".to_string())
+}
+
+fn yes_or_no_question(default: bool) -> bool {
+    // Default value : yes = true and no = false
+    let answer: bool;
+    let mut user_input = String::with_capacity(3);
+
+    loop {
+        print!(
+            "Yes or No ? (default: {}) ",
+            if default { "yes" } else { "no" }
+        );
+        let _ = stdout().flush();
+
+        user_input.clear();
+        std::io::stdin()
+            .read_line(&mut user_input)
+            .expect("Failed to read answer");
+        let user_input = user_input.trim();
+
+        if user_input.is_empty() {
+            answer = default;
+            break;
+        } else if ["Yes", "yes", "Y", "y"].contains(&user_input) {
+            answer = true;
+            break;
+        } else if ["No", "no", "N", "n"].contains(&user_input) {
+            answer = false;
+            break;
+        } else {
+            println!("{}", "Invalid answer".bold().red());
+        }
+    }
+    answer
+}
+
 /* ============================================================================
 ========================== Types declarations =================================
  ============================================================================== */
@@ -969,6 +1023,19 @@ struct Os {
     osname: String,
     osversion: String,
     repositories: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct ScriptBank {
+    list: Vec<Script>,
+}
+
+#[derive(Deserialize, Debug)]
+struct Script {
+    _key: String,
+    role: String,
+    content: String,
+    compatible_with: Vec<String>,
 }
 
 /* Unused for the moment

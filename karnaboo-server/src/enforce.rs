@@ -228,26 +228,6 @@ pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key
     
 }
 
-// This function is used to fulfill the database.
-// This function takes an os (md5 hash taken from repo-sources.yml)
-// and a role and returns the appropriate script as a String
-// to enforce this role to this os
-pub fn get_script_from_source_file(role: &str, os: &str, script_bank_path: &String) -> Result<Script, String> {
-    // Opening the script bank
-    let config_builder = Config::builder()
-        .add_source(File::new(script_bank_path.as_str(), FileFormat::Yaml))
-        .build()
-        .unwrap();
-    let script_bank = config_builder.try_deserialize::<ScriptBank>().unwrap();
-
-    for script in script_bank.list.into_iter() {
-        if (script.role == role) && script.compatible_with.contains(&os.to_string()) {
-            return Ok(script);
-        }
-    }
-
-    Err(String::from("No compatible script found !"))
-}
 
 // This function handles the networking part of sending the instructions to the host
 pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalInstructions) -> Result<bool, String> {
@@ -273,19 +253,6 @@ pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalIns
     }    
 }
 
-
-#[derive(Deserialize, Debug)]
-pub struct ScriptBank {
-    pub list: Vec<Script>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Script {
-    pub _key: String,
-    pub role: String,
-    pub content: String,
-    pub compatible_with: Vec<String>,
-}
 
 #[derive(Serialize)]
 pub struct FinalInstructions {

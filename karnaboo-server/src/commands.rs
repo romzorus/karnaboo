@@ -7,7 +7,6 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 use colored::Colorize;
-use std::io::{stdout, Write};
 
 pub fn help() {
     println!("");
@@ -76,38 +75,4 @@ pub fn show_goodbye_message() {
     println!(r" ██                        Ending program now...                   ██");
     println!(r" █████                          See you !                       █████");
     println!(r" ████████████████████████████████████████████████████████████████████");
-}
-
-pub fn yes_or_no_question(default: bool) -> bool {
-    // Default value : yes = true and no = false
-    let answer: bool;
-    let mut user_input = String::with_capacity(3);
-
-    loop {
-        print!(
-            "Yes or No ? (default: {}) ",
-            if default { "yes" } else { "no" }
-        );
-        let _ = stdout().flush();
-
-        user_input.clear();
-        std::io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read answer");
-        let user_input = user_input.trim();
-
-        if user_input.is_empty() {
-            answer = default;
-            break;
-        } else if ["Yes", "yes", "Y", "y"].contains(&user_input) {
-            answer = true;
-            break;
-        } else if ["No", "no", "N", "n"].contains(&user_input) {
-            answer = false;
-            break;
-        } else {
-            println!("{}", "Invalid answer".bold().red());
-        }
-    }
-    answer
 }
