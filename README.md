@@ -108,13 +108,7 @@ If the architectures allow it, you can also build your agent on the Karnaboo ser
 ## Usage
 TBD
 
-## What is already working
-
-- direct interaction with the database : on Karnaboo server, you can directly enter AQL queries and see the database response, giving you control over the data (AQL can't let you create or manage database and collections but only their content)
-- after a fresh ArangoDB installation, the server can create in it everything it needs and begin to wait for registration requests
-- once your database reflects what you have (the nodes) and what you want (the edges), you can enforce it on compatible distributions
-
-### Compatible distributions (as of 28/10/2023)
+## Compatible distributions (as of 28/10/2023)
 
 All the following distributions have been successfully tested as clients, DISS and REPS :
 
@@ -149,7 +143,6 @@ All the following distributions have been successfully tested as clients, DISS a
 
 *** Others ***
 - [ ] reorganize the code in a proper way, split the big functions, gather functions in specific files, improve readability
-- [ ] visuals for the "Principles" and "Usage" sections
 - [ ] comment the code
 - [ ] begin user documentation
 - [ ] encrypt communications

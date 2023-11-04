@@ -18,6 +18,11 @@ pub fn command_line_parsing(args: Vec<String>) -> Result<(String, SocketAddr, bo
                     // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
                     server = args[i + 1].clone();
 
+                    // If no port is specified, assume 9015
+                    if !server.contains(":") {
+                        server.push_str(":9015");
+                    }
+
                     match server.parse() {
                         Ok(socket) => {
                             server_socket = socket;
