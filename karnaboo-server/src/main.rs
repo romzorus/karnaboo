@@ -18,6 +18,7 @@ mod configuration;
 mod database;
 mod networking;
 mod enforce;
+mod handlerequests;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
