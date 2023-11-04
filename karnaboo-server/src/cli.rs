@@ -15,6 +15,7 @@ use crate::commands;
 use crate::{configuration::DatabaseInfo, database};
 use crate::enforce;
 use crate::configuration::Networking;
+use crate::handlerequests;
 
 use arangors;
 use colored::Colorize;
@@ -73,33 +74,44 @@ pub async fn thread_cli(
 
         if user_command_str.is_empty() {
             continue;
+        
         } else if ["exit", "ex", "quit", "q"].contains(&user_command_str) {
             commands::show_goodbye_message();
             exit(0);
+        
         } else if ["status", "stat", "s"].contains(&user_command_str) {
             commands::status_info();
+        
         } else if ["help", "h", "?"].contains(&user_command_str) {
             commands::help();
+        
         } else if ["aqlmode", "aql"].contains(&user_command_str) {
             let return_db_cli = database::aql_mode(&db_info);
             let _ = return_db_cli.await;
+        
         } else if ["dbbuild", "dbb"].contains(&user_command_str) {
             let return_db_check = database::db_build(&db_info);
             let _ = return_db_check.await;
+        
         } else if ["dbcheck", "dbc"].contains(&user_command_str) {
             let return_db_check = database::db_check(&db_info);
             let _ = return_db_check.await;
+        
         } else if ["dbgui", "dbg"].contains(&user_command_str) {
-            database::launch_webgui(&db_info);
+            commands::launch_webgui(&db_info);
+        
         } else if ["answer request", "ansreq", "ar"].contains(&user_command_str) {
             let return_answer_request =
-                database::answer_requests(&waiting_requests_buffer_cli, &db_info, &repo_sources_path, &script_bank_path);
+                handlerequests::answer_requests(&waiting_requests_buffer_cli, &db_info, &repo_sources_path, &script_bank_path);
             let _ = return_answer_request.await;
+        
         } else if ["enforce", "enf"].contains(&user_command_str) {
             let return_enforce = enforce::enforce(&db_info, &networking_info);
             let _ = return_enforce.await;
+        
         } else {
             println!("{} : {}", "Invalid command".bold().red(), user_command_str);
+        
         }
 
         user_command.clear();
