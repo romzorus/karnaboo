@@ -7,9 +7,8 @@ You should have received a copy of the GNU General Public License along with thi
 */
 
 use config::{self, Config, File, FileFormat};
-use configuration::{command_line_parsing, UserConfig};
+use configuration::command_line_parsing;
 use futures::lock::Mutex;
-use std::process::exit;
 use std::sync::Arc;
 use std::env;
 
@@ -23,16 +22,7 @@ mod handlerequests;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
-    let rt: tokio::runtime::Runtime;
-    match tokio::runtime::Runtime::new() {
-        Ok(rt_tmp) => {
-            rt = rt_tmp;
-        }
-        Err(e) => {
-            println!("[Main] : problem creating a Tokio runtime : {:?}", e);
-            exit(1);
-        }
-    }
+    let rt = tokio::runtime::Runtime::new().expect("[Main] : problem creating a Tokio runtime");
 
     // Parsing configuration file
     let args: Vec<String> = env::args().collect();
@@ -41,31 +31,15 @@ fn main() {
 
     configuration::check_user_arguments(&user_arguments);
 
-    let config_builder: Config;
-    match Config::builder()
+    let config_builder = Config::builder()
         .add_source(File::new(user_arguments.config_file_path.as_str(), FileFormat::Ini))
-        .build() {
-            Ok(config_tmp) => {
-                config_builder = config_tmp;
-            }
-            Err(e) => {
-                println!("[Main] : problem reading the configuration file : {:?}", e);
-                exit(1);
-            }
-    }
+        .build()
+        .expect("[Main] : problem reading the configuration file");
     
 
-    let user_config: UserConfig;
-    match config_builder
-        .try_deserialize::<configuration::UserConfig>() {
-            Ok(config_tmp) => {
-                user_config = config_tmp;
-            }
-            Err(e) => {
-                println!("[Main] : problem parsing the configuration file : {:?}", e);
-                exit(1);
-            }
-    }
+    let user_config = config_builder
+        .try_deserialize::<configuration::UserConfig>()
+        .expect("[Main] : problem parsing the configuration file");
 
     // Shared ressources between threads
     // Buffer for hosts requests not answered yet - used by CLI and Networking threads
