@@ -139,19 +139,26 @@ fn yes_or_no_question(default: bool) -> bool {
         );
         let _ = stdout().flush();
 
+        let final_user_input: &str;
         user_input.clear();
-        std::io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read answer");
-        let user_input = user_input.trim();
+        
+        match std::io::stdin()
+            .read_line(&mut user_input) {
+                Ok(_) => {
+                    final_user_input = user_input.trim();
+                }
+                Err(_) => {
+                    final_user_input = "error";
+                }
+            }
 
-        if user_input.is_empty() {
+        if final_user_input.is_empty() {
             answer = default;
             break;
-        } else if ["Yes", "yes", "Y", "y"].contains(&user_input) {
+        } else if ["Yes", "yes", "Y", "y"].contains(&final_user_input) {
             answer = true;
             break;
-        } else if ["No", "no", "N", "n"].contains(&user_input) {
+        } else if ["No", "no", "N", "n"].contains(&final_user_input) {
             answer = false;
             break;
         } else {
