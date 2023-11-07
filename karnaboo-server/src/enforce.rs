@@ -85,16 +85,22 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                     }
                 }
 
-                let exec_return = enforce_specific_host(
+                println!("      ** Exec return : START");
+                match enforce_specific_host(
                     &db_connector,
                     host._key.as_str(),
                     "reps",
                     host_ip,
                     networking_info,
                 )
-                .await;
-                println!("      ** Exec return : START");
-                println!("{}", exec_return.stdout);
+                .await {
+                    Ok(exec_result_tmp) => {
+                        println!("{}", exec_result_tmp.stdout);
+                    }
+                    Err(err) => {
+                        println!("Enforcing failed : {}", err);
+                    }
+                }
                 println!("      ** Exec return : END");
             }
         }
@@ -129,16 +135,22 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                     }
                 }
 
-                let exec_return = enforce_specific_host(
+                println!("      ** Exec return : START");
+                match enforce_specific_host(
                     &db_connector,
                     host._key.as_str(),
                     "diss",
                     host_ip,
                     networking_info,
                 )
-                .await;
-                println!("      ** Exec return : START");
-                println!("{}", exec_return.stdout);
+                .await {
+                    Ok(exec_result_tmp) => {
+                        println!("{}", exec_result_tmp.stdout);
+                    }
+                    Err(err) => {
+                        println!("Enforcing failed : {}", err);
+                    }
+                }
                 println!("      ** Exec return : END");
             }
         }
@@ -173,16 +185,22 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                     }
                 }
 
-                let exec_return = enforce_specific_host(
+                println!("      ** Exec return : START");
+                match enforce_specific_host(
                     &db_connector,
                     host._key.as_str(),
                     "client",
                     host_ip,
                     networking_info,
                 )
-                .await;
-                println!("      ** Exec return : START");
-                println!("{}", exec_return.stdout);
+                .await {
+                    Ok(exec_result_tmp) => {
+                        println!("{}", exec_result_tmp.stdout);
+                    }
+                    Err(err) => {
+                        println!("Enforcing failed : {}", err);
+                    }
+                }
                 println!("      ** Exec return : END");
             }
         }
@@ -198,43 +216,35 @@ pub async fn enforce_specific_host(
     role: &str,
     host_socket: SocketAddr,
     networking_info: &Networking,
-) -> ExecutionResult {
+) -> Result<ExecutionResult, String> {
     println!("  - Enforcing a {} at {}", role, host_socket.ip());
 
     // 1. Get the appropriate script
-    let mut generic_instructions = FinalInstructions {
-        script_content: String::from(""),
-    };
     match get_script_from_db(&db_connector, host_key, &role).await {
-        Ok(content) => {
-            generic_instructions = content;
-        }
-        Err(e) => {
-            println!("Unable to get the appropriate script to enforce this role to this host");
-            println!("{}", e);
-            exit(1);
-        }
-    };
+        Ok(generic_instructions) => {
+            
+            // 2. Adapt the script to the specific topology of the host
+            let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions)
+                .await
+                .unwrap();
 
-    // 2. Adapt the script to the specific topology of the host
-    let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions)
-        .await
-        .unwrap();
+            // 3. Send this script to the host
+            match send_script_to_host(host_socket, final_instructions) {
+                Ok(_) => {
+                    // 4. Wait for its return
+                    let host_exec_result = wait_for_host_exec_return(networking_info);
 
-    // 3. Send this script to the host
-    match send_script_to_host(host_socket, final_instructions) {
-        Ok(_) => {
-            // 4. Wait for its return
-            let host_exec_result = wait_for_host_exec_return(networking_info);
-
-            // 5. Return that result
-            host_exec_result
+                    // 5. Return that result
+                    Ok(host_exec_result)
+                }
+                Err(err) => {
+                    Err(format!("[Enforce] unable to send the script to the host : {}", err).to_string())
+                }
+            }
         }
-        Err(e) => ExecutionResult {
-            exit_status: "Error".to_string(),
-            stdout: "Unable send script to the host".to_string(),
-            stderr: e.to_string(),
-        },
+        Err(err) => {
+            Err(format!("[Enforce] unable to get the script for this (host,role) : {}", err).to_string())
+        }
     }
 }
 
