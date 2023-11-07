@@ -1,3 +1,4 @@
+use arangors::GenericConnection;
 /*
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
 
@@ -5,23 +6,23 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-use std::net::SocketAddr;
-use std::io::{Read, Write};
-use std::net::TcpStream;
 use arangors::uclient::reqwest::ReqwestClient;
 use arangors::Connection;
 use arangors::Database;
-use config::{self, Config, File, FileFormat};
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
-use std::process::exit;
+use std::io::{Read, Write};
+use std::net::SocketAddr;
 use std::net::TcpListener;
+use std::net::TcpStream;
+use std::process::exit;
 
-use crate::database::{NodeReps, NodeDiss, NodeClient};
 use crate::configuration::{DatabaseInfo, Networking};
-
+use crate::database::{NodeClient, NodeDiss, NodeReps};
 
 pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
-    let db_connection = Connection::establish_basic_auth(
+    let db_connection: GenericConnection<ReqwestClient>;
+    match Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
             &db_info.arangodb_server_address, &db_info.arangodb_server_port
@@ -31,59 +32,179 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
         &db_info.password,
     )
     .await
-    .unwrap();
+    {
+        Ok(connection_tmp) => {
+            db_connection = connection_tmp;
+        }
+        Err(err) => {
+            println!(
+                "{}",
+                format!("[Enforce] unable to connect to database server : {:?}", err).red()
+            );
+            return;
+        }
+    }
 
-    let db_connector = db_connection.db(&db_info.db_name).await.unwrap();
+    let db_connector: Database<ReqwestClient>;
+    match db_connection.db(&db_info.db_name).await {
+        Ok(connector_tmp) => {
+            db_connector = connector_tmp;
+        }
+        Err(err) => {
+            println!(
+                "{}",
+                format!("[Enforce] unable to connect to database : {:?}", err).red()
+            );
+            return;
+        }
+    }
 
-    // Starting with the REPS
+    // Beginning with the REPS
     println!("Enforcing the REPS...");
-    let reps_list: Vec<NodeReps> = db_connector
-        .aql_str("FOR host IN reps RETURN host")
+    match db_connector
+        .aql_str::<NodeReps>("FOR host IN reps RETURN host")
         .await
-        .unwrap();
+    {
+        Ok(reps_list) => {
+            for host in reps_list.into_iter() {
+                let host_ip: SocketAddr;
+                match format!("{}:9016", host.ip).parse() {
+                    Ok(data_tmp) => {
+                        host_ip = data_tmp;
+                    }
+                    Err(_) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "[Enforce] unable to parse IP of {}. Skipping",
+                                host.hostname
+                            )
+                            .red()
+                        );
+                        continue;
+                    }
+                }
 
-        for reps in reps_list.into_iter() {
-            let exec_return = enforce_specific_host(&db_connector, reps._key.as_str(), "reps", format!("{}:9016", reps.ip).parse().unwrap(), networking_info).await;
-            println!("      ** Exec return : START");
-            println!("{}", exec_return.stdout);
-            println!("      ** Exec return : END");
+                let exec_return = enforce_specific_host(
+                    &db_connector,
+                    host._key.as_str(),
+                    "reps",
+                    host_ip,
+                    networking_info,
+                )
+                .await;
+                println!("      ** Exec return : START");
+                println!("{}", exec_return.stdout);
+                println!("      ** Exec return : END");
+            }
+        }
+        Err(_) => {
+            println!("{}", "[Enforce] unable to get REPS list. Skipping".red());
+        }
     }
 
     // Pursuing with the DISS
     println!("Enforcing the DISS...");
-    let diss_list: Vec<NodeDiss> = db_connector
-        .aql_str("FOR host IN diss RETURN host")
+    match db_connector
+        .aql_str::<NodeDiss>("FOR host IN diss RETURN host")
         .await
-        .unwrap();
+    {
+        Ok(diss_list) => {
+            for host in diss_list.into_iter() {
+                let host_ip: SocketAddr;
+                match format!("{}:9016", host.ip).parse() {
+                    Ok(data_tmp) => {
+                        host_ip = data_tmp;
+                    }
+                    Err(_) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "[Enforce] unable to parse IP of {}. Skipping",
+                                host.hostname
+                            )
+                            .red()
+                        );
+                        continue;
+                    }
+                }
 
-        for diss in diss_list.into_iter() {
-            let exec_return = enforce_specific_host(&db_connector, diss._key.as_str(), "diss", format!("{}:9016", diss.ip).parse().unwrap(), networking_info).await;
-            println!("      ** Exec return : START");
-            println!("{}", exec_return.stdout);
-            println!("      ** Exec return : END");
+                let exec_return = enforce_specific_host(
+                    &db_connector,
+                    host._key.as_str(),
+                    "diss",
+                    host_ip,
+                    networking_info,
+                )
+                .await;
+                println!("      ** Exec return : START");
+                println!("{}", exec_return.stdout);
+                println!("      ** Exec return : END");
+            }
+        }
+        Err(_) => {
+            println!("{}", "[Enforce] unable to get DISS list. Skipping".red());
+        }
     }
 
-    // Ending with the clients
+    // Concluding with the clients
     println!("Enforcing the clients...");
-    let client_list: Vec<NodeClient> = db_connector
-        .aql_str("FOR host IN clients RETURN host")
+    match db_connector
+        .aql_str::<NodeClient>("FOR host IN clients RETURN host")
         .await
-        .unwrap();
+    {
+        Ok(client_list) => {
+            for host in client_list.into_iter() {
+                let host_ip: SocketAddr;
+                match format!("{}:9016", host.ip).parse() {
+                    Ok(data_tmp) => {
+                        host_ip = data_tmp;
+                    }
+                    Err(_) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "[Enforce] unable to parse IP of {}. Skipping",
+                                host.hostname
+                            )
+                            .red()
+                        );
+                        continue;
+                    }
+                }
 
-        for client in client_list.into_iter() {
-            let exec_return = enforce_specific_host(&db_connector, client._key.as_str(), "client", format!("{}:9016", client.ip).parse().unwrap(), networking_info).await;
-            println!("      ** Exec return : START");
-            println!("{}", exec_return.stdout);
-            println!("      ** Exec return : END");
+                let exec_return = enforce_specific_host(
+                    &db_connector,
+                    host._key.as_str(),
+                    "client",
+                    host_ip,
+                    networking_info,
+                )
+                .await;
+                println!("      ** Exec return : START");
+                println!("{}", exec_return.stdout);
+                println!("      ** Exec return : END");
+            }
+        }
+        Err(_) => {
+            println!("{}", "[Enforce] unable to get CLIENT list. Skipping".red());
+        }
     }
-
 }
 
-pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str, host_socket: SocketAddr, networking_info: &Networking) -> ExecutionResult {
+pub async fn enforce_specific_host(
+    db_connector: &Database<ReqwestClient>,
+    host_key: &str,
+    role: &str,
+    host_socket: SocketAddr,
+    networking_info: &Networking,
+) -> ExecutionResult {
     println!("  - Enforcing a {} at {}", role, host_socket.ip());
 
     // 1. Get the appropriate script
-    let mut generic_instructions = FinalInstructions { script_content: String::from("") };
+    let mut generic_instructions = FinalInstructions {
+        script_content: String::from(""),
+    };
     match get_script_from_db(&db_connector, host_key, &role).await {
         Ok(content) => {
             generic_instructions = content;
@@ -96,7 +217,9 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
     };
 
     // 2. Adapt the script to the specific topology of the host
-    let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions).await.unwrap();
+    let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions)
+        .await
+        .unwrap();
 
     // 3. Send this script to the host
     match send_script_to_host(host_socket, final_instructions) {
@@ -107,22 +230,23 @@ pub async fn enforce_specific_host(db_connector: &Database<ReqwestClient>, host_
             // 5. Return that result
             host_exec_result
         }
-        Err(e) => {
-            ExecutionResult {
-                exit_status: "Error".to_string(),
-                stdout: "Unable send script to the host".to_string(),
-                stderr: e.to_string()
-            }
-        }
+        Err(e) => ExecutionResult {
+            exit_status: "Error".to_string(),
+            stdout: "Unable send script to the host".to_string(),
+            stderr: e.to_string(),
+        },
     }
-
 }
-
-
 
 pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResult {
     // Open socket
-    let listener = TcpListener::bind(format!("{}:9016", networking_info.server_address)).expect(format!("Unable to open socket at {}:9016", networking_info.server_address).as_str());
+    let listener = TcpListener::bind(format!("{}:9016", networking_info.server_address)).expect(
+        format!(
+            "Unable to open socket at {}:9016",
+            networking_info.server_address
+        )
+        .as_str(),
+    );
     let (mut srv_stream, _srv_socket) = listener.accept().expect("Unable to establish connexion");
 
     // Get serialized data
@@ -134,22 +258,21 @@ pub fn wait_for_host_exec_return(networking_info: &Networking) -> ExecutionResul
 
     // Deserialize
     match serde_json::from_str(&serialized_content) {
-        Ok(content) => {
-            content
-        }
-        Err(e) => {
-            ExecutionResult {
-                exit_status: "Error".to_string(),
-                stdout: "Unable to deserialize data received from TcpStream".to_string(),
-                stderr: e.to_string()
-            }
-        }
+        Ok(content) => content,
+        Err(e) => ExecutionResult {
+            exit_status: "Error".to_string(),
+            stdout: "Unable to deserialize data received from TcpStream".to_string(),
+            stderr: e.to_string(),
+        },
     }
-
 }
 
-pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &str, host_key: &str, generic_instructions: FinalInstructions) -> Result<FinalInstructions, String> {
-       
+pub async fn adapt_instruction(
+    db_connector: &Database<ReqwestClient>,
+    role: &str,
+    host_key: &str,
+    generic_instructions: FinalInstructions,
+) -> Result<FinalInstructions, String> {
     match role {
         "client" => {
             // A client needs the IP address of its DISS
@@ -162,11 +285,11 @@ pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &st
                 println!("This client is connected to none or too much DISS. Abort");
                 Err(format!("ip_diss = {:?}", ip_diss))
             } else {
-                Ok(
-                    FinalInstructions {
-                        script_content: generic_instructions.script_content.replace("$IP_DISS", ip_diss[0].as_str())
-                    }
-                )
+                Ok(FinalInstructions {
+                    script_content: generic_instructions
+                        .script_content
+                        .replace("$IP_DISS", ip_diss[0].as_str()),
+                })
             }
         }
         "diss" => {
@@ -180,29 +303,38 @@ pub async fn adapt_instruction(db_connector: &Database<ReqwestClient>, role: &st
                 println!("This DISS is connected to none or too much REPS. Abort");
                 Err(format!("ip_reps = {:?}", ip_reps))
             } else {
-                Ok(
-                    FinalInstructions {
-                        script_content: generic_instructions.script_content.replace("$IP_REPS", ip_reps[0].as_str())
-                    }
-                )
+                Ok(FinalInstructions {
+                    script_content: generic_instructions
+                        .script_content
+                        .replace("$IP_REPS", ip_reps[0].as_str()),
+                })
             }
         }
         "reps" => {
             // A REPS needs [.. ?]
             Ok(generic_instructions)
         }
-        _ => {
-            Err(String::from("Error reading the role argument"))
-        }
+        _ => Err(String::from("Error reading the role argument")),
     }
 }
 
-pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key: &str, role: &str) -> Result<FinalInstructions, String> {
+pub async fn get_script_from_db(
+    db_connector: &Database<ReqwestClient>,
+    host_key: &str,
+    role: &str,
+) -> Result<FinalInstructions, String> {
     // Go from host to its connected OS then to the appropriate script connected to this OS
 
     // Which OS the host is connected to ?
     let host_os: Vec<String> = db_connector
-        .aql_str(format!("FOR link IN uses_os FILTER link._from == \"{}/{}\" RETURN link._to", if role == "client" { "clients"} else { role }, host_key).as_str())
+        .aql_str(
+            format!(
+                "FOR link IN uses_os FILTER link._from == \"{}/{}\" RETURN link._to",
+                if role == "client" { "clients" } else { role },
+                host_key
+            )
+            .as_str(),
+        )
         .await
         .unwrap();
 
@@ -218,21 +350,25 @@ pub async fn get_script_from_db(db_connector: &Database<ReqwestClient>, host_key
         .await
         .unwrap();
     }
-    
-    if script_result.len() != 1 {
-        Err(format!("OS connected to none or too much scripts. Script_result = {:?}", script_result))
-    } else {
-        Ok(FinalInstructions { script_content: script_result[0].clone()})
-    }
 
-    
+    if script_result.len() != 1 {
+        Err(format!(
+            "OS connected to none or too much scripts. Script_result = {:?}",
+            script_result
+        ))
+    } else {
+        Ok(FinalInstructions {
+            script_content: script_result[0].clone(),
+        })
+    }
 }
 
-
 // This function handles the networking part of sending the instructions to the host
-pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalInstructions) -> Result<bool, String> {
-
-     // Serialization before sending to socket
+pub fn send_script_to_host(
+    host_socket: SocketAddr,
+    final_instructions: FinalInstructions,
+) -> Result<bool, String> {
+    // Serialization before sending to socket
     let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
 
     let mut stream_client: TcpStream;
@@ -247,21 +383,18 @@ pub fn send_script_to_host(host_socket: SocketAddr, final_instructions: FinalIns
 
             Ok(true)
         }
-        Err(e) => {
-            Err(format!("Error : {}", e))
-        }
-    }    
+        Err(e) => Err(format!("Error : {}", e)),
+    }
 }
-
 
 #[derive(Serialize)]
 pub struct FinalInstructions {
-    pub script_content: String
+    pub script_content: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct ExecutionResult {
     pub exit_status: String,
     pub stdout: String,
-    pub stderr: String
+    pub stderr: String,
 }
