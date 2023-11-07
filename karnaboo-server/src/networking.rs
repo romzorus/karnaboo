@@ -37,7 +37,7 @@ pub async fn thread_networking(
                 let remote_host_ip: String;
                 match stream.peer_addr() {
                     Ok(remote_host_ip_tmp) => {
-                        remote_host_ip = remote_host_ip_tmp.to_string();
+                        remote_host_ip = remote_host_ip_tmp.ip().to_string();
                     }
                     Err(_) => {
                         println!("[Networking] unable to read remote host IP");
