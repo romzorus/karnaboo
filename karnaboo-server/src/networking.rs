@@ -23,24 +23,8 @@ pub async fn thread_networking(
         networking_info.server_address, networking_info.server_port
     );
 
-    let listener: TcpListener = match TcpListener::bind(&socket_address) {
-        Ok(open_socket) => open_socket,
-        Err(e) => {
-            println!(
-                "{}",
-                format!("Fatal error : impossible to open socket : {:?}", e)
-                    .bold()
-                    .red()
-            );
-            println!(
-                "{}",
-                "Please fix the problem and relaunch the program."
-                    .bold()
-                    .red()
-            );
-            std::process::exit(0);
-        }
-    };
+    let listener: TcpListener = TcpListener::bind(&socket_address)
+        .expect(format!("{}", "[Networking] unable to open socket".bold().red()).as_str());
 
     // Buffer for hosts requests not answered yet
     let mut request_handler: &TcpStream;
@@ -50,14 +34,47 @@ pub async fn thread_networking(
             Ok(stream) => {
                 request_handler = &stream;
 
+                let remote_host_ip: String;
+                match stream.peer_addr() {
+                    Ok(remote_host_ip_tmp) => {
+                        remote_host_ip = remote_host_ip_tmp.to_string();
+                    }
+                    Err(_) => {
+                        println!("[Networking] unable to read remote host IP");
+                        continue;
+                    }
+                }
+
                 let mut buffer: [u8; 1024] = [0; 1024];
-                let size = request_handler
-                    .read(&mut buffer)
-                    .expect("Unable to read from TcpStream");
+                let size: usize;
+                match request_handler.read(&mut buffer) {
+                    Ok(data_tmp) => {
+                        size = data_tmp;
+                    }
+                    Err(_) => {
+                        println!(
+                            "[Networking] unable to bufferize data received from {}",
+                            remote_host_ip
+                        );
+                        continue;
+                    }
+                }
+
                 let serialized_request_content = String::from_utf8_lossy(&buffer[..size]);
-                let deserialized_request_content: database::NodeHostRequest =
-                    serde_json::from_str(&serialized_request_content)
-                        .expect("Unable to deserialize data received from TcpStream");
+
+                let deserialized_request_content: database::NodeHostRequest;
+                match serde_json::from_str(&serialized_request_content) {
+                    Ok(deserialized_data) => {
+                        deserialized_request_content = deserialized_data;
+                    }
+                    Err(_) => {
+                        println!(
+                            "[Networking] unable to deserialize data received from {}",
+                            remote_host_ip
+                        );
+                        continue;
+                    }
+                }
 
                 /* It is necessary to deconstruct the received content, get the ip from TcpStream, then
                 reconstruct into another NodeHostRequest, because, when karnaboo agent sends its request to
@@ -77,8 +94,7 @@ pub async fn thread_networking(
                             "{}",
                             format!(
                                 "New request for client role from \'{}\' at {}",
-                                content.hostname,
-                                stream.peer_addr().unwrap().ip()
+                                content.hostname, remote_host_ip
                             )
                             .bold()
                             .blue()
@@ -86,7 +102,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Client(NodeClient {
                             hostname: content.hostname.clone(),
-                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: remote_host_ip, // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
@@ -97,8 +113,7 @@ pub async fn thread_networking(
                             "{}",
                             format!(
                                 "New request for DISS role from \'{}\' at {}",
-                                content.hostname,
-                                stream.peer_addr().unwrap().ip()
+                                content.hostname, remote_host_ip
                             )
                             .bold()
                             .blue()
@@ -106,7 +121,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Diss(NodeDiss {
                             hostname: content.hostname.clone(),
-                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: remote_host_ip, // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
@@ -117,8 +132,7 @@ pub async fn thread_networking(
                             "{}",
                             format!(
                                 "New request for REPS role from \'{}\' at {}",
-                                content.hostname,
-                                stream.peer_addr().unwrap().ip()
+                                content.hostname, remote_host_ip
                             )
                             .bold()
                             .blue()
@@ -126,7 +140,7 @@ pub async fn thread_networking(
 
                         final_request_content = NodeHostRequest::Reps(NodeReps {
                             hostname: content.hostname.clone(),
-                            ip: stream.peer_addr().unwrap().ip().to_string(), // Getting ip address from TcpStream
+                            ip: remote_host_ip, // Getting ip address from TcpStream
                             osname: content.osname.clone(),
                             osversion: content.osversion.clone(),
                             _key: content._key.clone(),
@@ -139,7 +153,10 @@ pub async fn thread_networking(
                 waiting_requests.push(final_request_content);
             }
             Err(e) => {
-                eprintln!("Unable to establish TcpStream with remote host : {}", e);
+                eprintln!(
+                    "[Networking] unable to establish TcpStream with remote host : {}",
+                    e
+                );
             }
         }
     }
