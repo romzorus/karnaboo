@@ -6,7 +6,10 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-use arangors::{Connection, graph::{Graph, EdgeDefinition}};
+use arangors::{
+    graph::{EdgeDefinition, Graph},
+    Connection,
+};
 use colored::Colorize;
 use config::{self, Config, File, FileFormat};
 use rustyline::error::ReadlineError;
@@ -76,18 +79,19 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
         } else {
             // Send command to database
 
-            let _result_command: Vec<serde_json::Value> = match db_connector.aql_str(user_input_str).await {
-                Ok(content) => {
-                    println!("Database return");
-                    println!("{:?}", content);
-                    content
-                }
-                Err(e) => {
-                    println!("{}", "Invalid AQL query".red());
-                    println!("{:?}", e);
-                    vec![json!([""])]
-                }
-            };
+            let _result_command: Vec<serde_json::Value> =
+                match db_connector.aql_str(user_input_str).await {
+                    Ok(content) => {
+                        println!("Database return");
+                        println!("{:?}", content);
+                        content
+                    }
+                    Err(e) => {
+                        println!("{}", "Invalid AQL query".red());
+                        println!("{:?}", e);
+                        vec![json!([""])]
+                    }
+                };
         }
         user_input.clear();
     }
@@ -127,12 +131,11 @@ pub async fn db_build(db_info: &DatabaseInfo) -> Result<()> {
 }
 
 pub async fn db_check(db_info: &DatabaseInfo) -> Result<()> {
-
     println!("Database and collections checking...");
 
     // 1. Check database and collections existence and create them if necessary
     let _ = db_build(db_info).await;
-        /*
+    /*
         Required collections :
             Nodes :
             - clients
@@ -438,7 +441,12 @@ pub async fn db_create_update_reps(db_info: &DatabaseInfo, host_info: NodeReps) 
     Ok(())
 }
 
-pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest, repo_sources_path: &String, script_bank_path: &String) -> Result<()> {
+pub async fn db_create_update_os(
+    db_info: &DatabaseInfo,
+    req: &NodeHostRequest,
+    repo_sources_path: &String,
+    script_bank_path: &String,
+) -> Result<()> {
     // Parsing repositories ressource file
     let config_builder = Config::builder()
         .add_source(File::new(repo_sources_path, FileFormat::Yaml))
@@ -617,8 +625,11 @@ pub async fn db_create_update_os(db_info: &DatabaseInfo, req: &NodeHostRequest, 
     Ok(())
 }
 
-pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_bank_path: &String) -> Result<()> {
-
+pub async fn db_create_update_script(
+    db_info: &DatabaseInfo,
+    os: String,
+    script_bank_path: &String,
+) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -639,7 +650,7 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_
             Ok(script) => {
                 // The os compatible list has to look like an array ["hash 1", "hash 2"] so a little formatting
                 // is needed before sending the AQL query.
-                
+
                 let mut hash_os_list = String::new();
                 for os_tmp in script.compatible_with.clone().into_iter() {
                     hash_os_list.push_str(format!("\"{}\", ", os_tmp).as_str());
@@ -656,18 +667,24 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_
                     script.content,
                     hash_os_list
                 );
-                        
-                let _: Vec<serde_json::Value> = match db.aql_str(&script_creation_query.as_str()).await {
-                    Ok(content) => {
-                        println!("{}", format!("Script (role {}) added/updated in database", role).bold().blue());
-                        content
-                    }
-                    Err(e) => {
-                        println!("{}", "Problem encountered with AQL query".red());
-                        println!("{:?}", e);
-                        vec![json!([""])]
-                    }
-                };
+
+                let _: Vec<serde_json::Value> =
+                    match db.aql_str(&script_creation_query.as_str()).await {
+                        Ok(content) => {
+                            println!(
+                                "{}",
+                                format!("Script (role {}) added/updated in database", role)
+                                    .bold()
+                                    .blue()
+                            );
+                            content
+                        }
+                        Err(e) => {
+                            println!("{}", "Problem encountered with AQL query".red());
+                            println!("{:?}", e);
+                            vec![json!([""])]
+                        }
+                    };
 
                 // Creation of edges between the os and its associated scripts
                 // Also, since a script can be associated to multiple os,
@@ -677,31 +694,28 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_
                 for compatible_os in script.compatible_with.into_iter() {
                     let edge_creation_query = format!(
                         r#"UPSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} INSERT {{ "_from": "scripts/{}", "_to": "os/{}" }} UPDATE {{ }} IN script_compatible_with"#,
-                        script._key,
-                        compatible_os,
-                        script._key,
-                        compatible_os
+                        script._key, compatible_os, script._key, compatible_os
                     );
                     // This query creates the "script_compatible_with" link even if the os is not present in the database.
                     // The others functions are not affected by this edge existing for nothing (at the moment) and, if this
                     // os shows up later in the database, the link will already be there.
 
-                    let _: Vec<serde_json::Value> = match db.aql_str(&edge_creation_query.as_str()).await {
-                        Ok(content) => {
-                            println!("{}", "        ↪ Script linked to a compatible os".bold().blue());
-                            content
-                        }
-                        Err(e) => {
-                            println!("{}", "Problem encountered with AQL query".red());
-                            println!("{:?}", e);
-                            vec![json!([""])]
-                        }
-                    };
+                    let _: Vec<serde_json::Value> =
+                        match db.aql_str(&edge_creation_query.as_str()).await {
+                            Ok(content) => {
+                                println!(
+                                    "{}",
+                                    "        ↪ Script linked to a compatible os".bold().blue()
+                                );
+                                content
+                            }
+                            Err(e) => {
+                                println!("{}", "Problem encountered with AQL query".red());
+                                println!("{:?}", e);
+                                vec![json!([""])]
+                            }
+                        };
                 }
-
-                
-
-
             }
             Err(e) => {
                 println!("Role {} : {}", role, e);
@@ -712,8 +726,7 @@ pub async fn db_create_update_script(db_info: &DatabaseInfo, os: String, script_
     Ok(())
 }
 
-pub async fn db_create_graph(db_info: &DatabaseInfo)  -> Result<()> {
-
+pub async fn db_create_graph(db_info: &DatabaseInfo) -> Result<()> {
     let db_connection = Connection::establish_basic_auth(
         format!(
             "http://{}:{}",
@@ -731,30 +744,30 @@ pub async fn db_create_graph(db_info: &DatabaseInfo)  -> Result<()> {
     let handles_edge = EdgeDefinition {
         collection: "handles".to_string(),
         from: vec!["diss".to_string()],
-        to: vec!["clients".to_string()]
+        to: vec!["clients".to_string()],
     };
 
     let redistributes_to_edge = EdgeDefinition {
         collection: "redistributes_to".to_string(),
         from: vec!["reps".to_string()],
-        to: vec!["diss".to_string()]
+        to: vec!["diss".to_string()],
     };
 
     let my_hosts_graph = Graph::builder()
         .name("all_my_hosts".to_string())
         .edge_definitions(vec![handles_edge, redistributes_to_edge])
-        .orphan_collections(vec!["reps".to_string(), "diss".to_string(), "clients".to_string()])
+        .orphan_collections(vec![
+            "reps".to_string(),
+            "diss".to_string(),
+            "clients".to_string(),
+        ])
         .build();
 
     match db.create_graph(my_hosts_graph, true).await {
         Ok(_) => {
-            println!(
-                "- graph all_my_hosts : {} - created",
-                "Ok".green().bold()
-            );
+            println!("- graph all_my_hosts : {} - created", "Ok".green().bold());
         }
         Err(e) => {
-            
             if format!("{:?}", e).contains("graph already exists") {
                 println!(
                     "- graph all_my_hosts : {} - already existing",
@@ -763,7 +776,7 @@ pub async fn db_create_graph(db_info: &DatabaseInfo)  -> Result<()> {
             } else {
                 println!(
                     "- graph all_my_hosts : {} - problem encountered whent creating graph",
-                        "NOK".red().bold()
+                    "NOK".red().bold()
                 );
                 println!("{:?}", e);
             }
@@ -778,7 +791,11 @@ pub async fn db_create_graph(db_info: &DatabaseInfo)  -> Result<()> {
 // and a role and returns the appropriate script as a String
 // to enforce this role to this os
 // Result type needs to be fully named (std::result) as to not be confused with rustyline::Result
-fn get_script_from_source_file(role: &str, os: &str, script_bank_path: &String) -> std::result::Result<Script, String> {
+fn get_script_from_source_file(
+    role: &str,
+    os: &str,
+    script_bank_path: &String,
+) -> std::result::Result<Script, String> {
     // Opening the script bank
     let config_builder = Config::builder()
         .add_source(File::new(script_bank_path.as_str(), FileFormat::Yaml))
@@ -793,7 +810,6 @@ fn get_script_from_source_file(role: &str, os: &str, script_bank_path: &String) 
     }
     Err("No compatible script found !".to_string())
 }
-
 
 /* ============================================================================
 ========================== Types declarations =================================

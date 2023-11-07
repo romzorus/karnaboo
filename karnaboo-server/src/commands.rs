@@ -81,24 +81,33 @@ pub fn show_goodbye_message() {
 }
 
 pub fn launch_webgui(db_info: &DatabaseInfo) {
-
     println!("Launching native web gui of ArangoDB");
 
     println!("To graphically edit your future topoly and create your flows between hosts,");
-    println!("after login, go to {} and activate \"Load full graph\" option.", "GRAPHS/all_my_hosts".bold().green());
+    println!(
+        "after login, go to {} and activate \"Load full graph\" option.",
+        "GRAPHS/all_my_hosts".bold().green()
+    );
     println!("There you can create appropriate edges between hosts.");
     println!("");
     println!("Direct link to graph (login still required) :");
-    println!("{}",
-        format!("http://{}:{}/_db/karnaboo/_admin/aardvark/index.html#graphs-v2/all_my_hosts", db_info.arangodb_server_address, db_info.arangodb_server_port)
-            .bold()
-            .green()
+    println!(
+        "{}",
+        format!(
+            "http://{}:{}/_db/karnaboo/_admin/aardvark/index.html#graphs-v2/all_my_hosts",
+            db_info.arangodb_server_address, db_info.arangodb_server_port
+        )
+        .bold()
+        .green()
     );
     println!("");
-    
+
     let _ = Command::new("sh")
         .arg("-c")
-        .arg(format!("xdg-open http://{}:{} 2> /dev/null", db_info.arangodb_server_address, db_info.arangodb_server_port))
+        .arg(format!(
+            "xdg-open http://{}:{} 2> /dev/null",
+            db_info.arangodb_server_address, db_info.arangodb_server_port
+        ))
         .spawn()
         .expect("Unable to launch web gui of ArangoDB");
 }
@@ -106,7 +115,9 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
 pub fn show_command_help_message() {
     println!("Please use the karnaboo server as follows :");
     println!(r"███████████████████████████████████████████████████████████");
-    println!(r"████ karnaboo-server -c [configuration file] -s [script bank file] -r [repositories file] ████");
+    println!(
+        r"████ karnaboo-server -c [configuration file] -s [script bank file] -r [repositories file] ████"
+    );
     println!(r"███████████████████████████████████████████████████████████");
     println!("  -c --config --configuration : configuration file in INI format");
     println!("  -s --script : script bank file in YAML format");

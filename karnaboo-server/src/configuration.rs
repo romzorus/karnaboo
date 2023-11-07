@@ -24,14 +24,12 @@ pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
     let tmp_args = args.clone();
 
     for (i, _arg) in tmp_args.into_iter().enumerate() {
-        
         if ["-c", "--config", "--configuration"].contains(&args[i].as_str()) {
             // Looking for config file path
             // There needs to be a following argument...
             if args.len() >= (i + 2) {
                 // (length=i+1) and we are looking for the next argument so (i+1+1) = (i+2)
                 user_arguments.config_file_path = args[i + 1].clone();
-
             } else {
                 // ... otherwise :
                 show_command_help_message();
@@ -68,24 +66,31 @@ pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
 
 pub fn check_user_arguments(user_arguments: &UserArguments) {
     if !Path::new(&user_arguments.config_file_path).exists() {
-        println!("Configuration file not found at {}. Abort.", user_arguments.config_file_path);
+        println!(
+            "Configuration file not found at {}. Abort.",
+            user_arguments.config_file_path
+        );
         exit(1);
     } else if !Path::new(&user_arguments.repo_sources_path).exists() {
-        println!("Repositories file not found at {}. Abort.", user_arguments.repo_sources_path);
+        println!(
+            "Repositories file not found at {}. Abort.",
+            user_arguments.repo_sources_path
+        );
         exit(1);
     } else if !Path::new(&user_arguments.script_bank_path).exists() {
-        println!("Script bank file not found at {}. Abort.", user_arguments.script_bank_path);
+        println!(
+            "Script bank file not found at {}. Abort.",
+            user_arguments.script_bank_path
+        );
         exit(1);
     }
 }
-
 
 pub struct UserArguments {
     pub config_file_path: String,
     pub repo_sources_path: String,
     pub script_bank_path: String,
 }
-
 
 #[derive(Deserialize, Clone)]
 pub struct UserConfig {

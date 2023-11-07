@@ -8,19 +8,20 @@ You should have received a copy of the GNU General Public License along with thi
 
 use colored::Colorize;
 use futures::lock::Mutex;
-use std::sync::Arc;
 use std::io::{stdout, Write};
-
+use std::sync::Arc;
 
 use crate::configuration::DatabaseInfo;
-use crate::database::{db_create_update_client, db_create_update_diss, db_create_update_reps, db_create_update_os};
 use crate::database::NodeHostRequest;
+use crate::database::{
+    db_create_update_client, db_create_update_diss, db_create_update_os, db_create_update_reps,
+};
 
 pub async fn answer_requests(
     waiting_requests: &Arc<Mutex<Vec<NodeHostRequest>>>,
     db_info: &DatabaseInfo,
     repo_sources_path: &String,
-    script_bank_path: &String
+    script_bank_path: &String,
 ) {
     let mut waiting_requests_contents = waiting_requests.lock().await;
     let total_number = &waiting_requests_contents.len();
@@ -60,7 +61,12 @@ pub async fn answer_requests(
                     let return_db_client_creation = db_create_update_client(&db_info, &host_info);
                     let _ = return_db_client_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
+                    let return_os_client_creation = db_create_update_os(
+                        db_info,
+                        &req_clone_for_os,
+                        repo_sources_path,
+                        &script_bank_path,
+                    );
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -87,7 +93,12 @@ pub async fn answer_requests(
                     let return_db_diss_creation = db_create_update_diss(&db_info, host_info);
                     let _ = return_db_diss_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
+                    let return_os_client_creation = db_create_update_os(
+                        db_info,
+                        &req_clone_for_os,
+                        repo_sources_path,
+                        &script_bank_path,
+                    );
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -113,7 +124,12 @@ pub async fn answer_requests(
                     let return_db_reps_creation = db_create_update_reps(&db_info, host_info);
                     let _ = return_db_reps_creation.await;
                     // Create/update the OS
-                    let return_os_client_creation = db_create_update_os(db_info, &req_clone_for_os, repo_sources_path, &script_bank_path);
+                    let return_os_client_creation = db_create_update_os(
+                        db_info,
+                        &req_clone_for_os,
+                        repo_sources_path,
+                        &script_bank_path,
+                    );
                     let _ = return_os_client_creation.await;
                     // Link the client to the OS
 
@@ -141,16 +157,15 @@ fn yes_or_no_question(default: bool) -> bool {
 
         let final_user_input: &str;
         user_input.clear();
-        
-        match std::io::stdin()
-            .read_line(&mut user_input) {
-                Ok(_) => {
-                    final_user_input = user_input.trim();
-                }
-                Err(_) => {
-                    final_user_input = "error";
-                }
+
+        match std::io::stdin().read_line(&mut user_input) {
+            Ok(_) => {
+                final_user_input = user_input.trim();
             }
+            Err(_) => {
+                final_user_input = "error";
+            }
+        }
 
         if final_user_input.is_empty() {
             answer = default;

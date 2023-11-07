@@ -9,16 +9,16 @@ You should have received a copy of the GNU General Public License along with thi
 use config::{self, Config, File, FileFormat};
 use configuration::command_line_parsing;
 use futures::lock::Mutex;
-use std::sync::Arc;
 use std::env;
+use std::sync::Arc;
 
 mod cli;
 mod commands;
 mod configuration;
 mod database;
-mod networking;
 mod enforce;
 mod handlerequests;
+mod networking;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
@@ -32,10 +32,12 @@ fn main() {
     configuration::check_user_arguments(&user_arguments);
 
     let config_builder = Config::builder()
-        .add_source(File::new(user_arguments.config_file_path.as_str(), FileFormat::Ini))
+        .add_source(File::new(
+            user_arguments.config_file_path.as_str(),
+            FileFormat::Ini,
+        ))
         .build()
         .expect("[Main] : problem reading the configuration file");
-    
 
     let user_config = config_builder
         .try_deserialize::<configuration::UserConfig>()
@@ -64,7 +66,7 @@ fn main() {
         waiting_requests_buffer_cli,
         networking_info_for_cli_thread,
         user_arguments.repo_sources_path,
-        user_arguments.script_bank_path
+        user_arguments.script_bank_path,
     ));
 
     // Database (thread not useful at the moment)
