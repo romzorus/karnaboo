@@ -224,21 +224,21 @@ pub async fn enforce_specific_host(
         Ok(generic_instructions) => {
             
             // 2. Adapt the script to the specific topology of the host
-            let final_instructions = adapt_instruction(&db_connector, role, host_key, generic_instructions)
-                .await
-                .unwrap();
+            match adapt_instruction(&db_connector, role, host_key, generic_instructions).await {
+                
+                Ok(final_instructions) => {
 
-            // 3. Send this script to the host
-            match send_script_to_host(host_socket, final_instructions) {
-                Ok(_) => {
+                    // 3. Send this script to the host
+                    send_script_to_host(host_socket, final_instructions);
+
                     // 4. Wait for its return
                     let host_exec_result = wait_for_host_exec_return(networking_info);
 
                     // 5. Return that result
-                    Ok(host_exec_result)
+                    Ok(host_exec_result)                  
                 }
-                Err(err) => {
-                    Err(format!("[Enforce] unable to send the script to the host : {}", err).to_string())
+                Err(_) => {
+                    Err("[Enforce] unable to produce a specific script for this host".to_string())
                 }
             }
         }
@@ -377,24 +377,15 @@ pub async fn get_script_from_db(
 pub fn send_script_to_host(
     host_socket: SocketAddr,
     final_instructions: FinalInstructions,
-) -> Result<bool, String> {
+) {
     // Serialization before sending to socket
     let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
 
-    let mut stream_client: TcpStream;
-    // TcpStream::connect(host_socket).expect("Unable to connect to host\'s agent");
-    match TcpStream::connect(format!("{}:9017", host_socket.ip())) {
-        Ok(stream) => {
-            stream_client = stream;
-
-            stream_client
-                .write(&serialized_instructions.as_bytes())
-                .expect("Unable to send data to the host");
-
-            Ok(true)
-        }
-        Err(e) => Err(format!("Error : {}", e)),
-    }
+    let mut stream_client = TcpStream::connect(format!("{}:9017", host_socket.ip())).unwrap();
+    
+    stream_client
+        .write(&serialized_instructions.as_bytes())
+        .expect("Unable to send data to the host");
 }
 
 #[derive(Serialize)]
