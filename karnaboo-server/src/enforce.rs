@@ -98,7 +98,7 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                         println!("{}", exec_result_tmp.stdout);
                     }
                     Err(err) => {
-                        println!("Enforcing failed : {}", err);
+                        println!("Enforcing failed : {:?}", err);
                     }
                 }
                 println!("      ** Exec return : END");
@@ -148,7 +148,7 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                         println!("{}", exec_result_tmp.stdout);
                     }
                     Err(err) => {
-                        println!("Enforcing failed : {}", err);
+                        println!("Enforcing failed : {:?}", err);
                     }
                 }
                 println!("      ** Exec return : END");
@@ -198,7 +198,7 @@ pub async fn enforce(db_info: &DatabaseInfo, networking_info: &Networking) {
                         println!("{}", exec_result_tmp.stdout);
                     }
                     Err(err) => {
-                        println!("Enforcing failed : {}", err);
+                        println!("Enforcing failed : {:?}", err);
                     }
                 }
                 println!("      ** Exec return : END");
@@ -216,7 +216,7 @@ pub async fn enforce_specific_host(
     role: &str,
     host_socket: SocketAddr,
     networking_info: &Networking,
-) -> Result<ExecutionResult, String> {
+) -> Result<ExecutionResult, ErrorKinds> {
     println!("  - Enforcing a {} at {}", role, host_socket.ip());
 
     // 1. Get the appropriate script
@@ -229,21 +229,46 @@ pub async fn enforce_specific_host(
                 Ok(final_instructions) => {
 
                     // 3. Send this script to the host
-                    send_script_to_host(host_socket, final_instructions);
+                    match send_script_to_host(host_socket, final_instructions) {
+                        Ok(_) => {
+                            // 4. Wait for its return
+                            let host_exec_result = wait_for_host_exec_return(networking_info);
 
-                    // 4. Wait for its return
-                    let host_exec_result = wait_for_host_exec_return(networking_info);
+                            // 5. Return that result
+                            Ok(host_exec_result) 
+                        }
+                        Err(kind) =>
+                            match kind {
+                                ErrorKinds::FailedSerialization => {
+                                    println!("[Enforce] unable to serialize data to send to remote host");
+                                    Err(ErrorKinds::FailedSerialization)
+                                }
+                                ErrorKinds::FailedSocketConnection => {
+                                    println!("[Enforce] unable to connect to remote host");
+                                    Err(ErrorKinds::FailedSocketConnection)
+                                }
+                                ErrorKinds::FailedSendingData => {
+                                    println!("[Enforce] unable to write data to TcpStream");
+                                    Err(ErrorKinds::FailedSendingData)
+                                }
+                                _ => {
+                                    println!("[Enforce] problem encountered");
+                                    Err(ErrorKinds::GenericError)
+                                }
+                            }
+                    }
 
-                    // 5. Return that result
-                    Ok(host_exec_result)                  
+                 
                 }
                 Err(_) => {
-                    Err("[Enforce] unable to produce a specific script for this host".to_string())
+                    println!("[Enforce] unable to produce a specific script for this host");
+                    Err(ErrorKinds::FailedSpecificScriptBuilding)
                 }
             }
         }
         Err(err) => {
-            Err(format!("[Enforce] unable to get the script for this (host,role) : {}", err).to_string())
+            println!("[Enforce] unable to get the script for this (host,role) : {}", err);
+            Err(ErrorKinds::FailedScriptRecovery)
         }
     }
 }
@@ -374,18 +399,49 @@ pub async fn get_script_from_db(
 }
 
 // This function handles the networking part of sending the instructions to the host
+// pub fn send_script_to_host_old(
+//     host_socket: SocketAddr,
+//     final_instructions: FinalInstructions,
+// ) {
+    // Serialization before sending to socket
+    // let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
+
+    // let mut stream_client = TcpStream::connect(format!("{}:9017", host_socket.ip())).unwrap();
+    
+    // stream_client
+    //     .write(&serialized_instructions.as_bytes())
+    //     .expect("Unable to send data to the host");
+
+// }
+
+// This function handles the networking part of sending the instructions to the host
 pub fn send_script_to_host(
     host_socket: SocketAddr,
     final_instructions: FinalInstructions,
-) {
+) -> Result<usize, ErrorKinds> {
     // Serialization before sending to socket
-    let serialized_instructions = serde_json::to_string(&final_instructions).unwrap();
-
-    let mut stream_client = TcpStream::connect(format!("{}:9017", host_socket.ip())).unwrap();
-    
-    stream_client
-        .write(&serialized_instructions.as_bytes())
-        .expect("Unable to send data to the host");
+    match serde_json::to_string(&final_instructions) {
+        Ok(serialized_instructions) => {
+            match TcpStream::connect(format!("{}:9017", host_socket.ip())) {
+                Ok(mut stream_client) => {
+                    match stream_client.write(&serialized_instructions.as_bytes()) {
+                        Ok(usize) => {
+                            Ok(usize)
+                        }
+                        Err(_) => {
+                            Err(ErrorKinds::FailedSendingData)
+                        }
+                    }
+                }
+                Err(_) => {
+                    Err(ErrorKinds::FailedSocketConnection)
+                }
+            }
+        }
+        Err(_) => {
+            Err(ErrorKinds::FailedSerialization)
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -398,4 +454,15 @@ pub struct ExecutionResult {
     pub exit_status: String,
     pub stdout: String,
     pub stderr: String,
+}
+
+#[derive(Debug)]
+pub enum ErrorKinds {
+    FailedSerialization,
+    FailedDeserialization,
+    FailedSocketConnection,
+    FailedSendingData,
+    FailedSpecificScriptBuilding,
+    FailedScriptRecovery,
+    GenericError
 }
