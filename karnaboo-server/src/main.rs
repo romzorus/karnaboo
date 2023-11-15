@@ -5,7 +5,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-
+#[macro_use] extern crate rocket;
 use config::{self, Config, File, FileFormat};
 use configuration::command_line_parsing;
 use futures::lock::Mutex;
@@ -13,6 +13,7 @@ use std::env;
 use std::sync::Arc;
 
 mod cli;
+mod webgui;
 mod commands;
 mod configuration;
 mod database;
@@ -22,7 +23,7 @@ mod networking;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
-    let rt = tokio::runtime::Runtime::new().expect("[Main] : problem creating a Tokio runtime");
+    let rt = tokio::runtime::Runtime::new().expect("[Main] problem creating a Tokio runtime");
 
     // Parsing configuration file
     let args: Vec<String> = env::args().collect();
@@ -37,11 +38,11 @@ fn main() {
             FileFormat::Ini,
         ))
         .build()
-        .expect("[Main] : problem reading the configuration file");
+        .expect("[Main] problem reading the configuration file");
 
     let user_config = config_builder
         .try_deserialize::<configuration::UserConfig>()
-        .expect("[Main] : problem parsing the configuration file");
+        .expect("[Main] problem parsing the configuration file");
 
     // Shared ressources between threads
     // Buffer for hosts requests not answered yet - used by CLI and Networking threads
@@ -69,11 +70,16 @@ fn main() {
         user_arguments.script_bank_path,
     ));
 
+    // WebGUI
+    let webgui_thread_handler = rt.spawn(webgui::rocket().launch());
+
+
     // Database (thread not useful at the moment)
     // let db_thread_handler = rt.spawn(database::thread_database_interact());
 
     // Wait for threads to finish
     let _ = rt.block_on(networking_thread_handler);
     let _ = rt.block_on(cli_thread_handler);
+    let _ = rt.block_on(webgui_thread_handler);
     // let _ = rt.block_on(db_thread_handler);
 }

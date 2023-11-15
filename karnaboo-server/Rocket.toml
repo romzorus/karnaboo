@@ -1,0 +1,12 @@
+[default]
+address = "127.0.0.1"
+port = 8080
+workers = 16
+max_blocking = 512
+keep_alive = 5
+ident = "Rocket"
+ip_header = "X-Real-IP"
+log_level = "off"
+temp_dir = "/tmp"
+cli_colors = true
+# secret_key = "xxxx"
