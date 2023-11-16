@@ -5,7 +5,8 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 use config::{self, Config, File, FileFormat};
 use configuration::command_line_parsing;
 use futures::lock::Mutex;
@@ -13,13 +14,13 @@ use std::env;
 use std::sync::Arc;
 
 mod cli;
-mod webgui;
 mod commands;
 mod configuration;
 mod database;
 mod enforce;
 mod handlerequests;
 mod networking;
+mod webgui;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
@@ -72,7 +73,6 @@ fn main() {
 
     // WebGUI
     let webgui_thread_handler = rt.spawn(webgui::rocket().launch());
-
 
     // Database (thread not useful at the moment)
     // let db_thread_handler = rt.spawn(database::thread_database_interact());
