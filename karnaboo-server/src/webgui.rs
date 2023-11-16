@@ -9,19 +9,21 @@ You should have received a copy of the GNU General Public License along with thi
 
 extern crate tera;
 
-use rocket::Rocket;
-use rocket::Build;
 use rocket::fs::NamedFile;
 use rocket::response::content;
-use rocket_dyn_templates::{Template, context};
+use rocket::Build;
+use rocket::Rocket;
+use rocket_dyn_templates::{context, Template};
 use std::path::Path;
 
 #[get("/")]
 fn index() -> content::RawHtml<Template> {
-
     content::RawHtml(Template::render(
         "index",
-        context! { username: "Romzorus", username_description: "Admin" }
+        context! {
+            username: "Romzorus",
+            username_description: "Admin",
+            server_status: "OK" },
     ))
 }
 
@@ -41,5 +43,7 @@ async fn script() -> Option<NamedFile> {
 }
 
 pub fn rocket() -> Rocket<Build> {
-    rocket::build().attach(Template::fairing()).mount("/", routes![index, style, logo, script])
+    rocket::build()
+        .attach(Template::fairing())
+        .mount("/", routes![index, style, logo, script])
 }
