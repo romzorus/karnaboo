@@ -25,9 +25,9 @@ fn index() -> content::RawHtml<Template> {
     ))
 }
 
-#[get("/mystyle.css")]
+#[get("/style.css")]
 async fn style() -> Option<NamedFile> {
-    NamedFile::open(Path::new("templates/mystyle.css")).await.ok()
+    NamedFile::open(Path::new("templates/style.css")).await.ok()
 }
 
 #[get("/logo.png")]

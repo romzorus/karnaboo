@@ -3,9 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="device-width, initial-scale=1.0">
-        <title>My web app</title>
+        <title>Karnaboo platform</title>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="stylesheet" href="mystyle.css">
+        <link rel="stylesheet" href="style.css">
         <script defer src="script.js"></script>
     </head>
     <body>
@@ -13,7 +13,7 @@
             <div class="top">
                 <div class="logo">
                     <i class="bx bxl-codepen"></i>
-                    <span>Karnaboo project</span>
+                    <span>Karnaboo platform</span>
                 </div>
                 <i class="bx bx-menu" id="btn"></i>
             </div>
@@ -34,59 +34,39 @@
                 </li>
                 <li>
                     <a href="#">
-                        <i class="bx bxs-shopping-bag"></i>
-                        <span class="nav-item">Products</span>
+                        <i class="bx bxs-network-chart"></i>
+                        <span class="nav-item">Topology</span>
                     </a>
-                    <span class="tooltip">Products</span>
+                    <span class="tooltip">Topology</span>
                 </li>
                 <li>
                     <a href="#">
-                        <i class="bx bx-list-check"></i>
-                        <span class="nav-item">Categories</span>
+                        <i class="bx bx-data"></i>
+                        <span class="nav-item">Database</span>
                     </a>
-                    <span class="tooltip">Categories</span>
+                    <span class="tooltip">Database</span>
                 </li>
                 <li>
                     <a href="#">
-                        <i class="bx bx-food-menu"></i>
-                        <span class="nav-item">Orders</span>
+                        <i class="bx bx-code-block"></i>
+                        <span class="nav-item">Logs</span>
                     </a>
-                    <span class="tooltip">Orders</span>
+                    <span class="tooltip">Logs</span>
                 </li>
                 <li>
                     <a href="#">
-                        <i class="bx bx-body"></i>
-                        <span class="nav-item">Customers</span>
+                        <i class="bx bx-power-off" style='color:#c21313'></i>
+                        <span class="nav-item">Stop</span>
                     </a>
-                    <span class="tooltip">Customers</span>
+                    <span class="tooltip">Stop</span>
                 </li>
-                <li>
-                    <a href="#">
-                        <i class="bx bx-location-plus"></i>
-                        <span class="nav-item">Shipping</span>
-                    </a>
-                    <span class="tooltip">Shipping</span>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="bx bx-cog"></i>
-                        <span class="nav-item">Settings</span>
-                    </a>
-                    <span class="tooltip">Settings</span>
-                </li>
-                <li>
-                    <a href="#">
-                        <i class="bx bx-log-out"></i>
-                        <span class="nav-item">Logout</span>
-                    </a>
-                    <span class="tooltip">Logout</span>
-                </li>
+
             </ul>
         </div>
         
         <div class="main-content">
             <div class="container">
-                <h1>Karnaboo server platform</h1>
+                <h1>Karnaboo server</h1>
                 <h1>21h12</h1>
             </div>
 
