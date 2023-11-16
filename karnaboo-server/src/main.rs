@@ -11,6 +11,7 @@ use config::{self, Config, File, FileFormat};
 use configuration::command_line_parsing;
 use futures::lock::Mutex;
 use std::env;
+use std::process::exit;
 use std::sync::Arc;
 
 mod cli;
@@ -55,31 +56,29 @@ fn main() {
     // Networking
     let networking_info_for_net_thread = user_config.networking.clone();
     let networking_info_for_cli_thread = user_config.networking.clone();
-    // let networking_thread_handler =
-    //     thread::spawn(move || networking::thread_networking(networking_info, waiting_requests_buffer_networking));
+
+    // Threads creation
     let networking_thread_handler = rt.spawn(networking::thread_networking(
         networking_info_for_net_thread,
         waiting_requests_buffer_networking,
     ));
 
-    //CLI
-    let cli_thread_handler = rt.spawn(cli::thread_cli(
-        user_config.databaseinfo,
-        waiting_requests_buffer_cli,
-        networking_info_for_cli_thread,
-        user_arguments.repo_sources_path,
-        user_arguments.script_bank_path,
-    ));
+    if user_arguments.cli_mode {
+        //CLI
+        let cli_thread_handler = rt.spawn(cli::thread_cli(
+            user_config.databaseinfo,
+            waiting_requests_buffer_cli,
+            networking_info_for_cli_thread,
+            user_arguments.repo_sources_path,
+            user_arguments.script_bank_path,
+        ));
+        let _ = rt.block_on(cli_thread_handler);
+    } else {
+        // WebGUI
+        let webgui_thread_handler = rt.spawn(webgui::rocket().launch());
+        let _ = rt.block_on(webgui_thread_handler);
+        exit(0); // Temporary exit here, since the webgui is not reading user input (see how CLI thread handles exit)
+    }
 
-    // WebGUI
-    let webgui_thread_handler = rt.spawn(webgui::rocket().launch());
-
-    // Database (thread not useful at the moment)
-    // let db_thread_handler = rt.spawn(database::thread_database_interact());
-
-    // Wait for threads to finish
     let _ = rt.block_on(networking_thread_handler);
-    let _ = rt.block_on(cli_thread_handler);
-    let _ = rt.block_on(webgui_thread_handler);
-    // let _ = rt.block_on(db_thread_handler);
 }
