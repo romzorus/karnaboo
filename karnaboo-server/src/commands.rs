@@ -114,11 +114,11 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
 
 pub fn show_command_help_message() {
     println!("Please use the karnaboo server as follows :");
-    println!(r"███████████████████████████████████████████████████████████");
-    println!(
-        r"████ karnaboo-server -c [configuration file] -s [script bank file] -r [repositories file] ████"
-    );
-    println!(r"███████████████████████████████████████████████████████████");
+    println!(r"████████████████████████████████████████████████████████████████████████████████");
+    println!(r"████ karnaboo-server [--cli] -c [conf file] -s [script file] -r [repo file] ████");
+    println!(r"████████████████████████████████████████████████████████████████████████████████");
+    println!("");
+    println!("  --cli : launch CLI instead of webGUI (default)");
     println!("  -c --config --configuration : configuration file in INI format");
     println!("  -s --script : script bank file in YAML format");
     println!("  -r --repo : repositories file in YAML format");
