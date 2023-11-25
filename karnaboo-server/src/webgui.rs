@@ -21,8 +21,6 @@ fn index() -> content::RawHtml<Template> {
     content::RawHtml(Template::render(
         "index",
         context! {
-            username: "Romzorus",
-            username_description: "Admin",
             server_status: "OK" },
     ))
 }

@@ -12,17 +12,10 @@
         <div class="sidebar">
             <div class="top">
                 <div class="logo">
-                    <i class="bx bxl-codepen"></i>
-                    <span>Karnaboo platform</span>
+                    <img src="logo.png" id="project-logo">
+                    <span>Karnaboo</span>
                 </div>
                 <i class="bx bx-menu" id="btn"></i>
-            </div>
-            <div class="user">
-                <img src="logo.png" alt="user picture" class="user-img">
-                <div>
-                    <p class="bold">{{username}}</p>
-                    <p>{{username_description}}</p>
-                </div>
             </div>
             <ul>
                 <li>
@@ -58,7 +51,7 @@
                         <i class="bx bx-power-off" style='color:#c21313'></i>
                         <span class="nav-item">Stop</span>
                     </a>
-                    <span class="tooltip">Stop</span>
+                    <span class="tooltip">Stop server</span>
                 </li>
 
             </ul>
@@ -70,7 +63,7 @@
                 <h1>{{server_status}}</h1>
             </div>
 
-            <div id="sigma-container"></div>
+            <div class="section-content"></div>
         </div>
     </body>
 </html>
