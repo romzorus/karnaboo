@@ -2,7 +2,7 @@
 
 Streamline your update flows in open source environments !
 
-## Context and objective
+## Context and goal
 
 The goal of this tool is to let administrators regulate and streamline **in a centralized and visual way** the update flows of their GNU/Linux hosts across an infrastructure. Also, in the long term, we want this tool to handle as much packaging systems and distributions as possible (apt, dnf, snap...).
 
@@ -68,11 +68,7 @@ As for the agent, you still have to build it and execute it on a host. There is 
 
 ## Building
 
-The tools themselves don't need to be *installed* indefinitely. The idea is to execute once, put everything in order, then leave your hosts alone. This isn't a supervision tool. Once they are correctly configured, your hosts leave their life on their own until you want to change everything again. In that case, you execute the server and the agents again.
-
-However, the content of the database remains after use. This allows you to re-enforce in case you need to replace a machine or something else changes. Also, you can make your topology evolve without starting from scratch again. You just start the server, start the agents and make them wait for instructions, change what you need in the database and enforce again.
-
-There are no packages yet so you have to build the tool yourself. However, Rust (Cargo) makes it really easy for us.
+The tools themselves don't need to be *installed* indefinitely. There are no packages yet so you have to build the tool yourself. However, Rust (Cargo) makes it really easy for us.
 
 ### Karnaboo server
 *** Prerequisites ***
@@ -106,7 +102,9 @@ Now your executable **karnaboo-agent** is in the `target/release` folder. You ca
 If the architectures allow it, you can also build your agent on the Karnaboo server, push the resulting file (the agent) on the client host (ssh, USB key, any other way) and execute it there.
 
 ## Usage
-TBD
+The idea is to execute once, put everything in order, then leave your hosts alone. This isn't a supervision tool. Once they are correctly configured, your hosts leave their life on their own until you want to change everything again. In that case, you execute the server and the agents again.
+
+However, the content of the database remains after use. This allows you to re-enforce in case you need to replace a machine or something else changes. Also, you can make your topology evolve without starting from scratch again. You just start the server, start the agents and make them wait for instructions, change what you need in the database and enforce again.
 
 ## Compatible distributions (as of 28/10/2023)
 
@@ -148,6 +146,7 @@ All the following distributions have been successfully tested as clients, DISS a
 - [ ] establish a communication protocol between server and agent so that the communication doesn't have to use multiple ports
 - [ ] create installation script / packaging .deb and more
 - [ ] add a little security in the communication protocol by using ip filtering (and expiring tokens issued by the agents for the server ?)
+- [ ] make it agentless with ssh
 
 ## Contributing
 All contributions, tips and ideas are more than welcome.
