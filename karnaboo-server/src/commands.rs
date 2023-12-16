@@ -102,23 +102,28 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
     );
     println!("");
 
-    let _ = Command::new("sh")
+    match Command::new("sh")
         .arg("-c")
         .arg(format!(
             "xdg-open http://{}:{} 2> /dev/null",
             db_info.arangodb_server_address, db_info.arangodb_server_port
         ))
         .spawn()
-        .expect("Unable to launch web gui of ArangoDB");
+    {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Unable to launch web gui of ArangoDB : {:?}", e);
+        }
+    }
 }
 
 pub fn show_command_help_message() {
     println!("Please use the karnaboo server as follows :");
-    println!(r"███████████████████████████████████████████████████████████");
-    println!(
-        r"████ karnaboo-server -c [configuration file] -s [script bank file] -r [repositories file] ████"
-    );
-    println!(r"███████████████████████████████████████████████████████████");
+    println!(r"████████████████████████████████████████████████████████████████████████████████");
+    println!(r"████ karnaboo-server [--cli] -c [conf file] -s [script file] -r [repo file] ████");
+    println!(r"████████████████████████████████████████████████████████████████████████████████");
+    println!("");
+    println!("  --cli : launch CLI instead of webGUI (default)");
     println!("  -c --config --configuration : configuration file in INI format");
     println!("  -s --script : script bank file in YAML format");
     println!("  -r --repo : repositories file in YAML format");

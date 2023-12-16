@@ -15,6 +15,7 @@ use crate::commands::show_command_help_message;
 pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
     // Initialization of arguments
     // By default, all files are considered to be in a "config" folder located beside the executable.
+    // Also, by default, only the webGUI is used.
     let mut user_arguments = UserArguments {
         config_file_path: "./config/karnaboo.conf".to_string(),
         repo_sources_path: "./config/repo-sources.yml".to_string(),

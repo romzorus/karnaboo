@@ -17,7 +17,6 @@ use crate::enforce;
 use crate::handlerequests;
 use crate::{configuration::DatabaseInfo, database};
 
-use arangors;
 use colored::Colorize;
 use futures::lock::Mutex;
 use rustyline::error::ReadlineError;
