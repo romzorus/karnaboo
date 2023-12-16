@@ -20,7 +20,6 @@ pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
         config_file_path: "./config/karnaboo.conf".to_string(),
         repo_sources_path: "./config/repo-sources.yml".to_string(),
         script_bank_path: "./config/script_bank.yml".to_string(),
-        cli_mode: false,
     };
 
     let tmp_args = args.clone();
@@ -57,8 +56,6 @@ pub fn command_line_parsing(args: Vec<String>) -> UserArguments {
                 show_command_help_message();
                 break;
             }
-        } else if "--cli" == &args[i] {
-            user_arguments.cli_mode = true;
         } else if ["-h", "--help"].contains(&args[i].as_str()) {
             show_command_help_message();
             break;
@@ -94,7 +91,6 @@ pub struct UserArguments {
     pub config_file_path: String,
     pub repo_sources_path: String,
     pub script_bank_path: String,
-    pub cli_mode: bool,
 }
 
 #[derive(Deserialize, Clone)]

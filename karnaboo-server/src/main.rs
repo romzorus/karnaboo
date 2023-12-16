@@ -5,13 +5,12 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-#[macro_use]
+
 extern crate rocket;
 use config::{self, Config, File, FileFormat};
 use configuration::command_line_parsing;
 use futures::lock::Mutex;
 use std::env;
-use std::process::exit;
 use std::sync::Arc;
 
 mod cli;
@@ -21,7 +20,6 @@ mod database;
 mod enforce;
 mod handlerequests;
 mod networking;
-mod webgui;
 
 fn main() {
     // Tokio runtime necessary for database access through async http
@@ -63,22 +61,14 @@ fn main() {
         waiting_requests_buffer_networking,
     ));
 
-    if user_arguments.cli_mode {
-        //CLI
-        let cli_thread_handler = rt.spawn(cli::thread_cli(
-            user_config.databaseinfo,
-            waiting_requests_buffer_cli,
-            networking_info_for_cli_thread,
-            user_arguments.repo_sources_path,
-            user_arguments.script_bank_path,
-        ));
-        let _ = rt.block_on(cli_thread_handler);
-    } else {
-        // WebGUI
-        let webgui_thread_handler = rt.spawn(webgui::rocket().launch());
-        let _ = rt.block_on(webgui_thread_handler);
-        exit(0); // Temporary exit here, since the webgui is not reading user input (see how CLI thread handles exit)
-    }
-
+    let cli_thread_handler = rt.spawn(cli::thread_cli(
+        user_config.databaseinfo,
+        waiting_requests_buffer_cli,
+        networking_info_for_cli_thread,
+        user_arguments.repo_sources_path,
+        user_arguments.script_bank_path,
+    ));
+    
+    let _ = rt.block_on(cli_thread_handler);
     let _ = rt.block_on(networking_thread_handler);
 }
