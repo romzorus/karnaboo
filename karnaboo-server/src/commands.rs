@@ -102,14 +102,19 @@ pub fn launch_webgui(db_info: &DatabaseInfo) {
     );
     println!("");
 
-    let _ = Command::new("sh")
+    match Command::new("sh")
         .arg("-c")
         .arg(format!(
             "xdg-open http://{}:{} 2> /dev/null",
             db_info.arangodb_server_address, db_info.arangodb_server_port
         ))
         .spawn()
-        .expect("Unable to launch web gui of ArangoDB");
+    {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Unable to launch web gui of ArangoDB : {:?}", e);
+        }
+    }
 }
 
 pub fn show_command_help_message() {
