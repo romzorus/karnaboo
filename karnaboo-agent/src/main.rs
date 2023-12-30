@@ -1,6 +1,7 @@
 use std::env;
 use std::net::SocketAddr;
-use std::process::{exit, Output};
+use std::os::unix::process::ExitStatusExt;
+use std::process::{exit, Output, ExitStatus};
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use serde::{Deserialize, Serialize};
@@ -73,14 +74,26 @@ fn main() {
 
 
     println!("**** Executing the final instructions ****");
-    let script_output = Command::new("sh")
+    let script_output = match Command::new("sh")
         .arg("-c")
         .arg(format!("{}", final_instructions.script_content))
         .output()
-        .expect("Wrong command");
+        {
+            Ok(output) => {
+                output
+            }
+            Err(e) => {
+                println!("The script could not be executed : {:?}", e);
+                Output {
+                    status: ExitStatus::from_raw(99),
+                    stdout: vec![],
+                    stderr: format!("{:?}", e).into()
+                }
+            }
+        };
 
 
-    println!("**** Execute the final instructions ****");
+    println!("**** Sending the execution results back to the Karnaboo server ****");
     networking::send_exec_result_to_server(script_output, server_socket);
 }
 

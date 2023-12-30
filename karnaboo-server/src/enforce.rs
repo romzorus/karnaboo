@@ -15,7 +15,8 @@ use std::io::{Read, Write};
 use std::net::SocketAddr;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::process::exit;
+use std::os::unix::process::ExitStatusExt;
+use std::process::ExitStatus;
 
 use crate::configuration::{DatabaseInfo, Networking};
 use crate::database::{NodeClient, NodeDiss, NodeReps};
@@ -233,9 +234,13 @@ pub async fn enforce_specific_host(
                         Ok(_) => {
                             // 4. Wait for its return
                             let host_exec_result = wait_for_host_exec_return(networking_info);
-
-                            // 5. Return that result
-                            Ok(host_exec_result)
+                            
+                            if host_exec_result.exit_status == ExitStatus::from_raw(99).to_string() {
+                                Err(ErrorKinds::FailedExecution)
+                            } else {
+                                 // 5. Return that result
+                                Ok(host_exec_result)
+                            }
                         }
                         Err(kind) => match kind {
                             ErrorKinds::FailedSerialization => {
@@ -458,5 +463,6 @@ pub enum ErrorKinds {
     FailedSendingData,
     FailedSpecificScriptBuilding,
     FailedScriptRecovery,
+    FailedExecution,
     GenericError,
 }
