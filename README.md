@@ -20,7 +20,7 @@ When your future topology is complete and consistent, you just tell the Karnaboo
 The server sends specific instructions to each host depending on its position in the topology and the
 role it is supposed to play now. Each host abides and reports when the adaptation is over.
 
-![Video demonstration here (youtube)](https://www.youtube.com/watch?v=QUFpegW3hGQ)
+[Video demonstration here (youtube)](https://www.youtube.com/watch?v=QUFpegW3hGQ)
 
 ### Different roles
 * **Karnaboo server**
