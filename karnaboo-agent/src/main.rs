@@ -2,8 +2,6 @@ use std::env;
 use std::net::SocketAddr;
 use std::os::unix::process::ExitStatusExt;
 use std::process::{exit, Output, ExitStatus};
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
@@ -29,9 +27,9 @@ fn main() {
 
     // *********** 1. parse the request
     let args: Vec<String> = env::args().collect();
-    let mut role = String::with_capacity(6); // "client | diss | reps"
-    let mut server_socket: SocketAddr = "0.0.0.0:0".parse().unwrap();
-    let mut wait_mode = false;
+    let role :  String; // "client | diss | reps"
+    let server_socket: SocketAddr;
+    let wait_mode: bool;
 
     match commandline::command_line_parsing(args) {
         Ok((tmp_role, tmp_server_socket, tmp_wait_mode)) => {
