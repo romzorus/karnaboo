@@ -458,7 +458,6 @@ pub struct ExecutionResult {
 #[derive(Debug)]
 pub enum ErrorKinds {
     FailedSerialization,
-    FailedDeserialization,
     FailedSocketConnection,
     FailedSendingData,
     FailedSpecificScriptBuilding,
