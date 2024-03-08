@@ -36,7 +36,7 @@ pub async fn thread_cli(
 
     commands::show_welcome_message();
 
-    let mut user_command = String::with_capacity(50);
+    let mut user_command: String;
     let mut rl = DefaultEditor::new()?;
 
     loop {

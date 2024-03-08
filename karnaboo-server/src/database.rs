@@ -45,7 +45,7 @@ pub async fn aql_mode(db_info: &DatabaseInfo) -> Result<()> {
 
     let mut rl = DefaultEditor::new()?;
 
-    let mut user_input = String::with_capacity(150);
+    let mut user_input: String;
 
     loop {
         let readline = rl.readline(format!("{}", "(db mode) $ ".bold().yellow()).as_str());
@@ -582,7 +582,7 @@ pub async fn db_create_update_os(
     // OS : host_os._key
     // Host : host_info._key
 
-    let mut edge_creation_query = String::new();
+    let edge_creation_query : String;
 
     match req {
         NodeHostRequest::Client(host_info) => {
