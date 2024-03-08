@@ -2,7 +2,6 @@ use colored::Colorize;
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use sysinfo::{DiskExt, System, SystemExt};
 use std::process::exit;
-use sudo::check;
 
 pub fn get_local_system_conf() -> LocalSystemConfig {
     // Unique Host ID building
