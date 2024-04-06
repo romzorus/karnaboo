@@ -1,3 +1,7 @@
+***Now focusing on another project : [Dux](https://gitlab.com/dux-tool/dux)***
+
+***But feel free to send comments/requests/contributions. I can still work on this if needed !***
+
 # Karnaboo
 
 Streamline your update flows in open source environments !
